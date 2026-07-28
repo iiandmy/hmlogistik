@@ -8,9 +8,14 @@ node_modules
 .env.test.local
 .env.production.local
 
-# Vite build output
+# Build output
 dist
-dist-ssr
+
+# Turborepo
+.turbo
+
+# Prisma generated client (regenerated on every prisma generate)
+prisma/generated
 
 # Logs
 logs
@@ -19,9 +24,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
-# Editor directories and files
+# IDE
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -34,8 +38,6 @@ lerna-debug.log*
 # OS
 .DS_Store
 Thumbs.db
-ehthumbs.db
-Desktop.ini
 
 # Misc
 *.local

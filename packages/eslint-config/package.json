@@ -1,0 +1,17 @@
+{
+    "name": "@hmlogistik/eslint-config",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "exports": {
+        ".": "./index.js"
+    },
+    "main": "./index.js",
+    "peerDependencies": {
+        "eslint": "^9.39.0"
+    },
+    "dependencies": {
+        "@antfu/eslint-config": "^9.1.0",
+        "eslint-plugin-react": "^7.37.5"
+    }
+}
