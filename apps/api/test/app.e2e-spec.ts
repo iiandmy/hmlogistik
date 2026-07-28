@@ -1,29 +1,71 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import type { INestApplication } from '@nestjs/common';
+import type { TestingModule } from '@nestjs/testing';
+import { afterEach, beforeEach, describe, it, jest } from '@jest/globals';
+import { Test } from '@nestjs/testing';
 import request from 'supertest';
-import { App } from 'supertest/types';
 import { AppModule } from './../src/app.module';
+import { MinioService } from './../src/providers/minio/minio.service';
+import { PrismaService } from './../src/providers/prisma/prisma.service';
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+describe('App (e2e)', () => {
+    let app: INestApplication;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+    const mockPrismaService = {
+        $connect: jest.fn<() => Promise<void>>(),
+        $disconnect: jest.fn<() => Promise<void>>(),
+        $on: jest.fn(),
+        $use: jest.fn(),
+        $transaction: jest.fn(),
+        transfer: {
+            findMany: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+            findUnique: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            findFirst: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            create: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            update: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            delete: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            count: jest.fn<() => Promise<number>>().mockResolvedValue(0),
+        },
+        transferFile: {
+            findMany: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+            findUnique: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            findFirst: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            create: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            update: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            delete: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            count: jest.fn<() => Promise<number>>().mockResolvedValue(0),
+        },
+    };
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
-  });
+    const mockMinioService = {
+        ensureBucket: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+        upload: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+        getSignedUrl: jest
+            .fn<() => Promise<string>>()
+            .mockResolvedValue('http://mock-signed-url'),
+        delete: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+        deleteMultiple: jest.fn<() => Promise<void>>().mockResolvedValue(undefined),
+    };
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
-  });
+    beforeEach(async () => {
+        const moduleFixture: TestingModule = await Test.createTestingModule({
+            imports: [AppModule],
+        })
+            .overrideProvider(PrismaService)
+            .useValue(mockPrismaService)
+            .overrideProvider(MinioService)
+            .useValue(mockMinioService)
+            .compile();
 
-  afterEach(async () => {
-    await app.close();
-  });
+        app = moduleFixture.createNestApplication();
+        app.setGlobalPrefix('api');
+        await app.init();
+    });
+
+    it('GET /api/transfers returns 200', () => {
+        return request(app.getHttpServer()).get('/api/transfers').expect(200);
+    });
+
+    afterEach(async () => {
+        await app.close();
+    });
 });

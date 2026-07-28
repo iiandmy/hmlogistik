@@ -1,0 +1,10 @@
+.git
+.gitignore
+.github
+node_modules
+.turbo
+.vscode
+dist
+.env
+*.md
+LICENSE

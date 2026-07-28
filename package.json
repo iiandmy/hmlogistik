@@ -1,24 +1,26 @@
 {
-  "name": "hmlogistik",
-  "private": true,
-  "version": "1.0.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
-  "scripts": {
-    "dev": "turbo run dev",
-    "dev:infra": "docker compose -f docker-compose.dev.yml up -d",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "db:generate": "yarn workspace @hmlogistik/database db:generate",
-    "db:migrate": "yarn workspace @hmlogistik/database db:migrate",
-    "db:push": "yarn workspace @hmlogistik/database db:push"
-  },
-  "devDependencies": {
-    "dotenv-cli": "^11.0.0",
-    "turbo": "^2"
-  },
-  "license": "MIT",
-  "packageManager": "yarn@1.22.22"
+    "name": "hmlogistik",
+    "type": "module",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "packageManager": "yarn@1.22.22",
+    "license": "MIT",
+    "scripts": {
+        "dev": "turbo run dev",
+        "dev:infra": "docker compose -f docker-compose.dev.yml up -d",
+        "build": "turbo run build",
+        "lint": "turbo run lint",
+        "db:generate": "yarn workspace @hmlogistik/database db:generate",
+        "db:migrate": "yarn workspace @hmlogistik/database db:migrate",
+        "db:push": "yarn workspace @hmlogistik/database db:push"
+    },
+    "devDependencies": {
+        "dotenv-cli": "^11.0.0",
+        "eslint": "^9.39.0",
+        "turbo": "^2"
+    }
 }

@@ -17,8 +17,25 @@ model Transfer {
   price      Decimal   @db.Decimal(12, 2)
   cargo      String
 
+  files TransferFile[]
+
   @@index([createdAt(sort: Desc)])
   @@index([shippedAt(sort: Desc)])
   @@index([price])
   @@map("transfers")
+}
+
+model TransferFile {
+  id           BigInt   @id @default(autoincrement())
+  transferId   BigInt   @map("transfer_id")
+  storagePath  String   @map("storage_path")
+  originalName String   @map("original_name")
+  mimeType     String   @map("mime_type")
+  sizeBytes    BigInt   @map("size_bytes")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  transfer Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([transferId])
+  @@map("transfer_files")
 }
