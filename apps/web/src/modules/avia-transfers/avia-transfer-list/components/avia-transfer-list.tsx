@@ -1,16 +1,7 @@
-import type { TableProps } from 'antd';
-import type { ChangeEventHandler, FC } from 'react';
-import type { TransferDto } from '~api/transfers';
-import { useQuery } from '@tanstack/react-query';
-import { useNavigate, useSearch } from '@tanstack/react-router';
-import { Alert, Flex, Table } from 'antd';
-import dayjs from 'dayjs';
-import { useEffect } from 'react';
-import { DEFAULT_TRANSFERS_QUERY, getTransfers } from '~api/transfers';
-import { useDelayedSearchQuery } from '~utils/hooks/use-delayed-search-query';
+import type { FC } from 'react';
+import { Flex, Table } from 'antd';
 import { aviaTransferListDatasource } from '../__mock__/mock-avia-transfers';
 import { useAviaTransferListColumns } from '../hooks/use-avia-transfer-list-columns';
-import { TransferListFilters } from './transfer-list-filters';
 
 // const MIN_SYMBOLS_TO_FETCH = 3;
 

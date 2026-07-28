@@ -1,6 +1,5 @@
 import type { ColumnsType } from 'antd/es/table';
 import type { AviaTransfer } from '../avia.types';
-import { Link } from '@tanstack/react-router';
 import { Typography } from 'antd';
 import { useMemo } from 'react';
 import { formatId } from '~utils/lib/formatId';
@@ -13,11 +12,9 @@ export const useAviaTransferListColumns = (): ColumnsType<AviaTransfer> => {
             dataIndex: 'id',
             key: 'id',
             render: (_, record) => (
-                <Link to="/avia-transfers/$id" params={{ id: String(record.id) }}>
-                    <Typography.Link>
-                        {formatId(record.id, 'А')}
-                    </Typography.Link>
-                </Link>
+                <Typography.Link>
+                    {formatId(record.id, 'А')}
+                </Typography.Link>
             ),
         },
         {
