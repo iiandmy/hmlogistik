@@ -11,10 +11,10 @@ export const CreateAviaTransferPage: FC = () => {
     const navigate = useNavigate();
 
     const [transferForm] = Form.useForm<AviaTransfer>();
-    const [error, setError] = useState<string | null>(null);
-    const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [_error, setError] = useState<string | null>(null);
+    const [_fileList, _setFileList] = useState<UploadFile[]>([]);
 
-    const onCreateTransfer = (transfer: AviaTransfer): void => {
+    const onCreateTransfer = (_transfer: AviaTransfer): void => {
         setError(null);
     };
 
