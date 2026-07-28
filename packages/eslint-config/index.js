@@ -18,6 +18,7 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 '**/coverage',
                 '**/prisma/generated',
                 '**/docs',
+                '**/skills-lock.json',
             ],
             typescript: {
                 overrides: {
