@@ -1,0 +1,24 @@
+generator client {
+  provider = "prisma-client"
+  output = "./generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Transfer {
+  id         BigInt    @id @default(autoincrement())
+  createdAt  DateTime? @map("created_at") @db.Timestamptz()
+  shippedAt  DateTime? @map("shipped_at") @db.Timestamptz()
+  transporter String
+  receiver   String
+  container  String?
+  price      Decimal   @db.Decimal(12, 2)
+  cargo      String
+
+  @@index([createdAt(sort: Desc)])
+  @@index([shippedAt(sort: Desc)])
+  @@index([price])
+  @@map("transfers")
+}

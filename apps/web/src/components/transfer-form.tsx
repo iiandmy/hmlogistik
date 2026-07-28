@@ -1,0 +1,194 @@
+import type { FormInstance, FormProps, UploadFile } from 'antd';
+import type { FC } from 'react';
+import type { Transfer } from '~utils/types/types';
+import { UploadOutlined } from '@ant-design/icons';
+import { Alert, App, Button, Col, DatePicker, Divider, Flex, Form, Input, Row, Space, Upload } from 'antd';
+import dayjs from 'dayjs';
+import styles from './transfer-form.module.css';
+
+dayjs.locale('ru');
+
+const layout: Pick<FormProps, 'labelCol' | 'wrapperCol' | 'labelWrap' | 'size' | 'layout'> = {
+    labelWrap: true,
+    size: 'large',
+    layout: 'vertical',
+};
+
+interface Props {
+    form: FormInstance<Transfer>;
+    error: string | null;
+    initialValues?: Transfer;
+    onFinish: (values: Transfer) => void;
+    onValuesChange?: (changedValues: Partial<Transfer>, allValues: Transfer) => void;
+    fileList: UploadFile[];
+    onFileListChange: (fileList: UploadFile[]) => void;
+    onFileRemove?: (file: UploadFile) => void;
+}
+
+const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
+const MAX_FILES_PER_TRANSFER = 10;
+const ACCEPTED_MIME_TYPES = new Set([
+    'application/pdf',
+    'image/jpeg',
+    'image/png',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+]);
+
+export const TransferForm: FC<Props> = ({
+    form,
+    initialValues,
+    onFinish,
+    error,
+    onValuesChange,
+    fileList,
+    onFileListChange,
+    onFileRemove,
+}) => {
+    const { message } = App.useApp();
+
+    const handleBeforeUpload = (file: File): boolean | typeof Upload.LIST_IGNORE => {
+        if (fileList.length >= MAX_FILES_PER_TRANSFER) {
+            message.error(`Можно прикрепить не более ${MAX_FILES_PER_TRANSFER} файлов`);
+            return Upload.LIST_IGNORE;
+        }
+
+        if (!ACCEPTED_MIME_TYPES.has(file.type)) {
+            message.error('Разрешены только PDF, JPG, PNG, DOCX и XLSX');
+            return Upload.LIST_IGNORE;
+        }
+
+        if (file.size > MAX_FILE_SIZE_BYTES) {
+            message.error('Максимальный размер файла — 20MB');
+            return Upload.LIST_IGNORE;
+        }
+
+        return false;
+    };
+
+    const handleUploadChange = (nextFileList: UploadFile[]): void => {
+        onFileListChange(nextFileList.slice(0, MAX_FILES_PER_TRANSFER));
+    };
+
+    return (
+        <Form<Transfer>
+            {...layout}
+            form={form}
+            className={styles.form_layout}
+            name="transfer-form"
+            initialValues={initialValues}
+            onFinish={onFinish}
+            onValuesChange={onValuesChange}
+        >
+            <Row gutter={{ lg: 24 }}>
+                <Col span={12}>
+                    {error && <Alert title={error} type="error" showIcon />}
+                    <Flex gap={12}>
+                        <Form.Item
+                            rules={[
+                                { required: true, message: 'Введите перевозчика' },
+                            ]}
+                            name="transporter"
+                            label="Перевозчик"
+                            className={styles.full_width}
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            rules={[
+                                { required: true, message: 'Введите получателя' },
+                            ]}
+                            name="receiver"
+                            label="Получатель"
+                            className={styles.full_width}
+                        >
+                            <Input />
+                        </Form.Item>
+                    </Flex>
+                    <Form.Item
+                        rules={[
+                            { required: true, message: 'Введите название груза' },
+                        ]}
+                        name="cargo"
+                        label="Груз"
+                        className={styles.full_width}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Flex gap={12} style={{ flex: 1 }}>
+                        <Form.Item
+                            name="container"
+                            label="Контейнер"
+                            className={styles.full_width}
+                        >
+                            <Input />
+                        </Form.Item>
+                        <Form.Item
+                            required
+                            label="Цена"
+                            className={styles.full_width}
+                        >
+                            <Space.Compact block>
+                                <Input
+                                    value="$"
+                                    readOnly
+                                    style={{ width: 36 }}
+                                />
+                                <Form.Item
+                                    rules={[
+                                        { required: true, message: 'Введите цену' },
+                                    ]}
+                                    name="price"
+                                    noStyle
+                                >
+                                    <Input min={0} type="number" />
+                                </Form.Item>
+                            </Space.Compact>
+                        </Form.Item>
+                    </Flex>
+                    <Flex gap={12}>
+                        <Form.Item
+                            name="createdAt"
+                            label="Выход"
+                            className={styles.full_width}
+                        >
+                            <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                        </Form.Item>
+                        <Form.Item
+                            name="shippedAt"
+                            label="Доставлено"
+                            className={styles.full_width}
+                        >
+                            <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                        </Form.Item>
+                    </Flex>
+                </Col>
+                <Col span={1} className={styles.full_height}>
+                    <Divider vertical className={styles.full_height} />
+                </Col>
+                <Col span={10}>
+                    <Form.Item
+                        label="Файлы"
+                        extra="До 10 файлов размером до 20МБ, .pdf, .docx, .xlsx"
+                    >
+                        <Upload
+                            multiple
+                            accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx"
+                            listType="picture"
+                            fileList={fileList}
+                            beforeUpload={handleBeforeUpload}
+                            onChange={info => handleUploadChange(info.fileList)}
+                            onRemove={(file) => {
+                                onFileRemove?.(file);
+                                return true;
+                            }}
+                            showUploadList={{ showDownloadIcon: true }}
+                        >
+                            <Button size="middle" icon={<UploadOutlined />}>Прикрепить файлы</Button>
+                        </Upload>
+                    </Form.Item>
+                </Col>
+            </Row>
+        </Form>
+    );
+};

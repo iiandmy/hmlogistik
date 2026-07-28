@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@hmlogistik/shared": ["../../packages/shared/src"],
+      "@hmlogistik/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
