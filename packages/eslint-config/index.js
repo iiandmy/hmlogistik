@@ -17,6 +17,7 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 '**/.turbo',
                 '**/coverage',
                 '**/prisma/generated',
+                '**/docs',
             ],
             typescript: {
                 overrides: {

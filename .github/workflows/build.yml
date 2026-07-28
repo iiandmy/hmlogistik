@@ -39,8 +39,12 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: database-dist
-          path: packages/database/dist
+          name: database-build
+          path: |
+            packages/database/dist
+            packages/database/prisma/generated
+            packages/database/package.json
+            packages/database/tsconfig.json
 
   build-api:
     needs: [build-database]
@@ -57,8 +61,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: database-dist
-          path: packages/database/dist
+          name: database-build
+          path: packages/database
 
       - run: yarn workspace api build
 
@@ -77,7 +81,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: database-dist
-          path: packages/database/dist
+          name: database-build
+          path: packages/database
 
       - run: yarn workspace web build
