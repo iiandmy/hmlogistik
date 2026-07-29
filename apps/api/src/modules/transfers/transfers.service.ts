@@ -1,6 +1,6 @@
-import type { PrismaService } from '../../providers/prisma/prisma.service';
-import type { FilesService } from '../files/files.service';
-import type { TransferFileResponse, UploadedFile } from '../files/interfaces/transfer-file-response.interface';
+import { PrismaService } from '../../providers/prisma/prisma.service';
+import { FilesService } from '../files/files.service';
+import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
 import type { CreateTransferDto } from './dto/create-transfer.dto';
 import type { QueryTransfersDto } from './dto/query-transfers.dto';
 import type { UpdateTransferDto } from './dto/update-transfer.dto';
@@ -97,6 +97,7 @@ export class TransfersService {
             container: row.container,
             price: Number(row.price),
             cargo: row.cargo,
+            files: [],
         }));
 
         const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
@@ -121,6 +122,8 @@ export class TransfersService {
             throw new NotFoundException('Transfer not found');
         }
 
+        const files = await this.filesService.getFilesByEntity('transfer', id);
+
         return {
             id: Number(row.id),
             createdAt: row.createdAt?.toISOString() ?? null,
@@ -130,6 +133,7 @@ export class TransfersService {
             container: row.container,
             price: Number(row.price),
             cargo: row.cargo,
+            files,
         };
     }
 
@@ -235,18 +239,5 @@ export class TransfersService {
         if (files.length > 0) {
             await this.filesService.uploadFiles('transfer', id, files);
         }
-    }
-
-    async getFiles(id: number): Promise<TransferFileResponse[]> {
-        const existing = await this.prisma.transfer.findUnique({
-            where: { id },
-            select: { id: true },
-        });
-
-        if (!existing) {
-            throw new NotFoundException('Transfer not found');
-        }
-
-        return this.filesService.getFilesByEntity('transfer', id);
     }
 }

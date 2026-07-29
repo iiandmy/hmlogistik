@@ -1,49 +1,31 @@
 import type { Transfer } from '~utils/types/types';
-import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import { getTransferById, TransferNotFoundError } from '~api/transfers';
-import 'dayjs/locale/ru';
-
-dayjs.locale('ru');
+import { mapTransferDtoToForm, useTransferDetail } from '~api/transfers';
 
 interface UseTransferResult {
     transfer: Transfer | null;
+    files: import('~api/transfers').TransferFileDto[];
     isLoading: boolean;
     isError: boolean;
 }
 
-export function useTransfer(id: string): UseTransferResult {
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['transfer', id],
-        queryFn: async () => getTransferById(id),
-        retry: c => c < 1,
-    });
+export const useTransfer = (id: string): UseTransferResult => {
+    const { data, isLoading, isError } = useTransferDetail({ id });
 
-    if (error instanceof TransferNotFoundError) {
+    if (isError || !data) {
         return {
             transfer: null,
-            isLoading: false,
-            isError: true,
-        };
-    }
-
-    if (!data) {
-        return {
-            transfer: null,
+            files: [],
             isLoading,
-            isError: Boolean(error),
+            isError,
         };
     }
+
+    const { transfer, files } = mapTransferDtoToForm(data);
 
     return {
-        transfer: {
-            ...data,
-            container: data.container ?? '',
-            price: String(data.price),
-            createdAt: data.createdAt ? dayjs(data.createdAt) : null,
-            shippedAt: data.shippedAt ? dayjs(data.shippedAt) : null,
-        },
+        transfer,
+        files,
         isLoading,
         isError: false,
     };
-}
+};

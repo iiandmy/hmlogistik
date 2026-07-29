@@ -33,6 +33,7 @@ export default function hmlogistikEslintConfig({ react: enableReact = true, ...u
                 'style/semi': ['error', 'always'],
                 'node/prefer-global/process': 'off',
                 'node/prefer-global/buffer': 'off',
+                'antfu/top-level-function': 'off',
             },
         },
         {
@@ -46,7 +47,6 @@ export default function hmlogistikEslintConfig({ react: enableReact = true, ...u
                 },
             },
             rules: {
-                'antfu/top-level-function': 'off',
                 'react-legacy/function-component-definition': [
                     'error',
                     {

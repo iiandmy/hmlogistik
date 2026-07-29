@@ -7,15 +7,13 @@ interface Props {
     record: TransferDto;
 }
 
-export const TransporterColumn: FC<Props> = ({ record }) => {
-    return (
-        <Flex align="center" gap={4}>
-            <Tag>
-                {record.transporter}
-            </Tag>
-            <Tooltip title="Условия перевозки: $5000 наличными">
-                <InfoCircleOutlined />
-            </Tooltip>
-        </Flex>
-    );
-};
+export const TransporterColumn: FC<Props> = ({ record }) => (
+    <Flex align="center" gap={4}>
+        <Tag>
+            {record.transporter}
+        </Tag>
+        <Tooltip title="Условия перевозки: $5000 наличными">
+            <InfoCircleOutlined />
+        </Tooltip>
+    </Flex>
+);

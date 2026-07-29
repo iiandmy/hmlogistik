@@ -18,7 +18,8 @@ export interface DelayedSearchQueryValue {
     delayedSearchQuery: string;
     isTyping: boolean;
 }
-export function useDelayedSearchQuery(args: Args = defaultInitialArgs): DelayedSearchQueryValue {
+
+export const useDelayedSearchQuery = (args: Args = defaultInitialArgs): DelayedSearchQueryValue => {
     const [searchQuery, setSearchQuery] = useState<string>(args.initialValue || defaultInitialArgs.initialValue);
     const [delayedSearchQuery, setDelayedSearchQuery] = useState<string>(
         args.initialValue || defaultInitialArgs.initialValue,
@@ -49,4 +50,4 @@ export function useDelayedSearchQuery(args: Args = defaultInitialArgs): DelayedS
     }, [searchQuery, args.delay, args.skipInitialCall]);
 
     return { q: searchQuery, setSearchQuery, delayedSearchQuery, isTyping };
-}
+};

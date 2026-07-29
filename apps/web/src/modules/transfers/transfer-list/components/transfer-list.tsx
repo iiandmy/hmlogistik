@@ -1,12 +1,10 @@
 import type { TableProps } from 'antd';
 import type { ChangeEventHandler, FC } from 'react';
 import type { TransferDto } from '~api/transfers';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Alert, Flex, Table } from 'antd';
-import dayjs from 'dayjs';
 import { useEffect } from 'react';
-import { DEFAULT_TRANSFERS_QUERY, getTransfers } from '~api/transfers';
+import { DEFAULT_TRANSFERS_QUERY, mapTransferDtoToDatasource, useTransfersList } from '~api/transfers';
 import { useDelayedSearchQuery } from '~utils/hooks/use-delayed-search-query';
 import { useTransferListColumns } from '../hooks/use-transfer-list-columns';
 import { TransferListFilters } from './transfer-list-filters';
@@ -22,18 +20,9 @@ export const TransferList: FC = () => {
 
     const searchQuery = { ...DEFAULT_TRANSFERS_QUERY, ...search };
 
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['transfers', searchQuery],
-        queryFn: async () => getTransfers(searchQuery),
-    });
+    const { data, isLoading, error } = useTransfersList(searchQuery);
 
-    const transfersDatasource = (data?.items ?? []).map((transfer: TransferDto) => ({
-        ...transfer,
-        key: transfer.id,
-        container: transfer.container,
-        createdAt: transfer.createdAt ? dayjs(transfer.createdAt).format('DD/MM/YYYY') : null,
-        shippedAt: transfer.shippedAt ? dayjs(transfer.shippedAt).format('DD/MM/YYYY') : null,
-    }));
+    const transfersDatasource = (data?.items ?? []).map(mapTransferDtoToDatasource);
 
     useEffect(() => {
         if (delayedSearchQuery && delayedSearchQuery.length < MIN_SYMBOLS_TO_FETCH) {

@@ -13,32 +13,30 @@ dayjs.locale('ru');
 
 const queryClient = new QueryClient();
 
-const App: FC = () => {
-    return (
-        <ConfigProvider
-            locale={locale}
-            theme={{
-                components: {
-                    Form: {
-                        labelFontSize: 14,
-                        labelHeight: 12,
-                        verticalLabelPadding: 0,
-                        itemMarginBottom: 20,
-                    },
-                    Divider: {
-                        margin: 12,
-                        marginLG: 12,
-                    },
+const App: FC = () => (
+    <ConfigProvider
+        locale={locale}
+        theme={{
+            components: {
+                Form: {
+                    labelFontSize: 14,
+                    labelHeight: 12,
+                    verticalLabelPadding: 0,
+                    itemMarginBottom: 20,
                 },
-            }}
-        >
-            <AppContext>
-                <QueryClientProvider client={queryClient}>
-                    <RouterProvider router={router} />
-                </QueryClientProvider>
-            </AppContext>
-        </ConfigProvider>
-    );
-};
+                Divider: {
+                    margin: 12,
+                    marginLG: 12,
+                },
+            },
+        }}
+    >
+        <AppContext>
+            <QueryClientProvider client={queryClient}>
+                <RouterProvider router={router} />
+            </QueryClientProvider>
+        </AppContext>
+    </ConfigProvider>
+);
 
 export default App;

@@ -4,11 +4,9 @@ import { AviaTransferList } from './components/avia-transfer-list';
 
 import { TransferListNavBar } from './components/transfer-list-nav-bar';
 
-export const AviaTransferListPage: FC = () => {
-    return (
-        <Flex vertical>
-            <TransferListNavBar />
-            <AviaTransferList />
-        </Flex>
-    );
-};
+export const AviaTransferListPage: FC = () => (
+    <Flex vertical>
+        <TransferListNavBar />
+        <AviaTransferList />
+    </Flex>
+);

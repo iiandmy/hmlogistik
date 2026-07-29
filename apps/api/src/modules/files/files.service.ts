@@ -1,5 +1,5 @@
-import type { MinioService } from '../../providers/minio/minio.service';
-import type { PrismaService } from '../../providers/prisma/prisma.service';
+import { MinioService } from '../../providers/minio/minio.service';
+import { PrismaService } from '../../providers/prisma/prisma.service';
 import type {
     TransferFileResponse,
     UploadedFile,

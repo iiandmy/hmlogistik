@@ -1,14 +1,12 @@
 import type { UploadFile } from 'antd';
 import type { FC } from 'react';
-import type { TransferFileDto, UpdateTransferInput, UpdateTransferPayload } from '~api/transfers';
+import type { UpdateTransferPayload } from '~api/transfers';
 import type { Transfer } from '~utils/types/types';
 import { CheckCircleTwoTone, LeftOutlined } from '@ant-design/icons';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { App, Button, Card, Empty, Flex, Form, Skeleton, Tooltip, Typography } from 'antd';
 import { useMemo, useState } from 'react';
-import { getTransferFiles, updateTransfer } from '~api/transfers';
+import { useUpdateTransfer } from '~api/transfers';
 import { TransferForm } from '~components/transfer-form';
 import { useTransfer } from '~modules/transfers/edit-transfer/hooks/use-transfer';
 import { formatId } from '~utils/lib/formatId';
@@ -19,7 +17,7 @@ export const EditTransferPage: FC = () => {
     const { message } = App.useApp();
     const { id } = useParams({ from: '/transfers/$id' });
 
-    const { transfer, isLoading, isError } = useTransfer(id);
+    const { transfer, files: transferFiles, isLoading, isError } = useTransfer(id);
     const [diff, setDiff] = useState<Partial<Transfer>>({});
     const [error, setError] = useState<string | null>(null);
     const [newFiles, setNewFiles] = useState<UploadFile[]>([]);
@@ -29,45 +27,34 @@ export const EditTransferPage: FC = () => {
 
     const shippedAt = Form.useWatch('shippedAt', transferForm);
 
-    const queryClient = useQueryClient();
-
     const handleEditTransferError = (): void => {
         setError('Ошибка при редактировании отправки');
     };
 
     const handleEditTransferSuccess = (): void => {
         setError(null);
-        queryClient.invalidateQueries({ queryKey: ['transfer', id] });
-        queryClient.invalidateQueries({ queryKey: ['transfer-files', id] });
         message.success('Отправка успешно отредактирована');
         navigate({ to: '/transfers' });
     };
 
-    const { mutate, isPending } = useMutation({
-        mutationFn: (input: UpdateTransferInput) => updateTransfer(id, input),
-        onError: handleEditTransferError,
-        onSuccess: handleEditTransferSuccess,
-    });
+    const { mutate, isPending } = useUpdateTransfer(
+        { id },
+        {
+            onError: handleEditTransferError,
+            onSuccess: handleEditTransferSuccess,
+        },
+    );
 
-    const { data: transferFiles = [] } = useQuery({
-        queryKey: ['transfer-files', id],
-        queryFn: async () => getTransferFiles(id),
-        enabled: Boolean(transfer),
-        refetchOnWindowFocus: false,
-    });
-
-    const existingFileList = useMemo(() => {
-        return transferFiles
-            .filter((file: TransferFileDto) => !removedFileIds.includes(file.id))
-            .map((file: TransferFileDto): UploadFile => ({
-                uid: `existing-${file.id}`,
-                name: file.originalName,
-                status: 'done',
-                url: file.downloadUrl,
-                type: file.mimeType,
-                size: file.sizeBytes,
-            }));
-    }, [removedFileIds, transferFiles]);
+    const existingFileList = useMemo(() => transferFiles
+        .filter(file => !removedFileIds.includes(file.id))
+        .map((file): UploadFile => ({
+            uid: `existing-${file.id}`,
+            name: file.originalName,
+            status: 'done',
+            url: file.downloadUrl,
+            type: file.mimeType,
+            size: file.sizeBytes,
+        })), [removedFileIds, transferFiles]);
 
     const fileList = useMemo(() => [...existingFileList, ...newFiles], [existingFileList, newFiles]);
 
