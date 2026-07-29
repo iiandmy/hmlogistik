@@ -61,14 +61,15 @@ COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 
 # Prisma schema, migrations & config (needed at runtime for migrate deploy)
-COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/prisma/migrations ./packages/database/prisma/migrations
+COPY --from=builder /app/packages/database/prisma/schema.prisma ./packages/database/prisma/schema.prisma
 COPY --from=builder /app/packages/database/prisma.config.ts ./packages/database/prisma.config.ts
 COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
 
-# Prisma-generated client engine (platform-specific binary)
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+# Prisma-generated client (output = "./generated" in schema.prisma)
+COPY --from=builder /app/packages/database/prisma/generated ./packages/database/prisma/generated
 
-# Prisma npm package (runtime dependency for @prisma/client)
+# Prisma npm packages (runtime dependencies: @prisma/client, @prisma/adapter-pg)
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
 # API package.json (used by yarn for production dependency resolution)
