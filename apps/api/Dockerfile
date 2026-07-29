@@ -1,51 +1,89 @@
 # =============================================================================
-# Stage 1: Build
+# STAGE 1: Installer — install ALL dependencies (including devDependencies)
 # =============================================================================
-FROM node:22-alpine AS builder
+FROM node:22-alpine AS installer
+
 WORKDIR /app
 
-# ---------- Dependencies ----------
-# Copy all workspace package.json files so yarn can resolve workspace deps
+# Copy root dependency manifests (layer caching)
 COPY package.json yarn.lock ./
-COPY apps/api/package.json apps/api/tsconfig.json apps/api/tsconfig.build.json apps/api/nest-cli.json apps/api/
-COPY packages/database/package.json packages/database/tsconfig.json packages/database/prisma.config.ts packages/database/
-COPY packages/eslint-config/package.json packages/eslint-config/
+COPY turbo.json ./
 
-RUN yarn install --frozen-lockfile
+# Copy ALL workspace package.json files so `yarn install` resolves workspaces
+COPY apps/web/package.json apps/web/package.json
+COPY apps/api/package.json apps/api/package.json
+COPY packages/database/package.json packages/database/package.json
+COPY packages/eslint-config/package.json packages/eslint-config/package.json
 
-# ---------- Build @hmlogistik/database ----------
-# prisma generate reads the schema (no DB connection needed)
-# tsc -b uses composite mode from tsconfig.json
-COPY packages/database/prisma ./packages/database/prisma
-COPY packages/database/index.ts ./packages/database/index.ts
+# Install dependencies (frozen-lockfile ensures reproducible builds)
+RUN yarn install --frozen-lockfile --production=false
 
-RUN npx prisma generate --schema=packages/database/prisma/schema.prisma \
- && npx tsc -b packages/database
+# =============================================================================
+# STAGE 2: Builder — build workspace dependencies + API
+# =============================================================================
+FROM installer AS builder
 
-# ---------- Build API ----------
-COPY apps/api/src ./apps/api/src
+WORKDIR /app
 
+# Copy all source files (excluding patterns listed in .dockerignore)
+COPY . .
+
+# DATABASE_URL build arg — required by Prisma generate during build.
+# It does NOT need to point to a real database; Prisma only needs the schema
+# file to generate the client. A placeholder is sufficient.
+ARG DATABASE_URL
+
+# Create a temporary .env so Prisma generate can read DATABASE_URL,
+# then remove it after build to avoid leaking secrets into the image layer.
+RUN echo "DATABASE_URL=$DATABASE_URL" > .env && \
+    yarn workspace @hmlogistik/database build && \
+    rm .env
+
+# Build the NestJS API (tsc compilation via nest build)
 RUN yarn workspace api build
 
 # =============================================================================
-# Stage 2: Production image
+# STAGE 3: Runner — run the compiled NestJS API
 # =============================================================================
-FROM node:22-alpine
+FROM node:22-alpine AS runner
+
 WORKDIR /app
 
-# Copy compiled output
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
+# Create a non-root user for security
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy package.json for NestJS module resolution
-COPY --from=builder /app/apps/api/package.json ./apps/api/
+# ── Copy built artifacts from builder ──────────────────────────────────────
 
-# Copy compiled database package (needed at runtime for Prisma client)
-COPY --from=builder /app/packages/database/package.json ./packages/database/
+# Compiled API output
+COPY --from=builder /app/apps/api/dist ./dist
+
+# Compiled database package (Prisma client + types)
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
-COPY --from=builder /app/packages/database/prisma/generated ./packages/database/prisma/generated
 
-# Copy node_modules (production deps only)
-COPY --from=builder /app/node_modules ./node_modules
+# Prisma schema, migrations & config (needed at runtime for migrate deploy)
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/prisma.config.ts ./packages/database/prisma.config.ts
+COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
+
+# Prisma-generated client engine (platform-specific binary)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Prisma npm package (runtime dependency for @prisma/client)
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
+# API package.json (used by yarn for production dependency resolution)
+COPY --from=builder /app/apps/api/package.json ./package.json
+
+# ── Install production dependencies only ───────────────────────────────────
+RUN yarn install --frozen-lockfile --production=true
+
+# Install Prisma CLI globally so we can run migrations at runtime
+# (prisma is a devDependency of @hmlogistik/database, not included in --production)
+RUN npm install -g prisma@^7.9.0
+
+# Drop root privileges
+USER appuser
 
 EXPOSE 3000
-CMD ["node", "apps/api/dist/main.js"]
+
+CMD ["node", "dist/main"]
