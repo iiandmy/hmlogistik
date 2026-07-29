@@ -6,7 +6,7 @@ import { transportersApi } from './client';
 import { transporterKeys } from './queryKeys';
 
 export const useTransportersList = (
-    params?: object,
+    _params?: object,
     options?: UseQueryOptions<never>,
 ): UseQueryResult<never> => useQuery({
     queryKey: transporterKeys.all,

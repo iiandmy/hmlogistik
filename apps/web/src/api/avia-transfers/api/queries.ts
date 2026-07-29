@@ -6,7 +6,7 @@ import { aviaTransfersApi } from './client';
 import { aviaTransferKeys } from './queryKeys';
 
 export const useAviaTransfersList = (
-    params?: object,
+    _params?: object,
     options?: UseQueryOptions<never>,
 ): UseQueryResult<never> => useQuery({
     queryKey: aviaTransferKeys.list(),

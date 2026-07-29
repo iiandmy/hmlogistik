@@ -6,7 +6,7 @@ import { cargoApi } from './client';
 import { cargoKeys } from './queryKeys';
 
 export const useCargoList = (
-    params?: object,
+    _params?: object,
     options?: UseQueryOptions<never>,
 ): UseQueryResult<never> => useQuery({
     queryKey: cargoKeys.all,

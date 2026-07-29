@@ -6,7 +6,7 @@ import { receiversApi } from './client';
 import { receiverKeys } from './queryKeys';
 
 export const useReceiversList = (
-    params?: object,
+    _params?: object,
     options?: UseQueryOptions<never>,
 ): UseQueryResult<never> => useQuery({
     queryKey: receiverKeys.all,
