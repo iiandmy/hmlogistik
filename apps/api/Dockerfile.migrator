@@ -1,11 +1,12 @@
+# Minimal image for running Prisma migrations
 FROM node:22-alpine
 WORKDIR /app
 
-# Copy only what Prisma needs: schema and migrations
+# Copy only the Prisma schema and migrations
 COPY packages/database/prisma ./packages/database/prisma
 COPY packages/database/prisma.config.ts ./packages/database/
 
-# Install only Prisma CLI (no full workspace install)
+# Install Prisma CLI globally
 RUN npm install -g prisma@^7.9.0
 
 # DATABASE_URL is provided via docker-compose environment.
