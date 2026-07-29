@@ -4,11 +4,12 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 COPY apps/api/package.json apps/api/tsconfig.json apps/api/tsconfig.build.json apps/api/nest-cli.json apps/api/
 COPY packages/database/package.json packages/database/tsconfig.json packages/database/prisma.config.ts packages/database/
+COPY packages/eslint-config/package.json packages/eslint-config/
 
 RUN yarn install --frozen-lockfile
 
 COPY packages/database/prisma ./packages/database/prisma
-COPY packages/database/src ./packages/database/src
+COPY packages/database/index.ts ./packages/database/index.ts
 
 RUN echo "DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hmlogistik" > .env \
  && yarn workspace @hmlogistik/database build

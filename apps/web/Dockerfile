@@ -3,6 +3,8 @@ WORKDIR /app
 
 COPY package.json yarn.lock ./
 COPY apps/web/package.json apps/web/tsconfig.json apps/web/tsconfig.app.json apps/web/tsconfig.node.json apps/web/vite.config.ts apps/web/index.html apps/web/
+COPY packages/database/package.json packages/database/tsconfig.json packages/database/prisma.config.ts packages/database/
+COPY packages/eslint-config/package.json packages/eslint-config/
 
 RUN yarn install --frozen-lockfile
 
