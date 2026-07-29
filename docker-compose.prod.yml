@@ -47,16 +47,13 @@ services:
   migrator:
     build:
       context: .
-      dockerfile: apps/api/Dockerfile
-      target: builder
+      dockerfile: apps/api/Dockerfile.migrator
     restart: no
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin_pwd}@postgres:5432/${POSTGRES_DB:-hmlogistik}?schema=public
-    command: >
-      sh -c "cd /app && npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma"
     networks:
       - internal
 
