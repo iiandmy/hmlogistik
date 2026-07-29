@@ -1,11 +1,26 @@
 name: Build
+
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
 
 jobs:
-  build:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - run: yarn lint
+
+  build-database:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,4 +35,53 @@ jobs:
 
       - run: yarn install --frozen-lockfile
 
-      - run: yarn build
+      - run: yarn workspace @hmlogistik/database build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: database-build
+          path: |
+            packages/database/dist
+            packages/database/prisma/generated
+            packages/database/package.json
+            packages/database/tsconfig.json
+
+  build-api:
+    needs: [build-database]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: database-build
+          path: packages/database
+
+      - run: yarn workspace api build
+
+  build-web:
+    needs: [build-database]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: database-build
+          path: packages/database
+
+      - run: yarn workspace web build
