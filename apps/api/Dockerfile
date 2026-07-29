@@ -8,7 +8,7 @@ COPY packages/database/package.json packages/database/tsconfig.json packages/dat
 RUN yarn install --frozen-lockfile
 
 COPY packages/database/prisma ./packages/database/prisma
-COPY packages/database/src ./packages/database/src
+COPY packages/database/index.ts ./packages/database/index.ts
 
 RUN echo "DATABASE_URL=postgresql://postgres:postgres@postgres:5432/hmlogistik" > .env \
  && yarn workspace @hmlogistik/database build
