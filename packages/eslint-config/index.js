@@ -34,8 +34,6 @@ export default function hmlogistikEslintConfig({ react: enableReact = true, ...u
                 'node/prefer-global/process': 'off',
                 'node/prefer-global/buffer': 'off',
                 'antfu/top-level-function': 'off',
-                'func-style': ['error', 'expression', { allowArrowFunctions: true }],
-                'arrow-body-style': ['error', 'as-needed'],
             },
         },
         {

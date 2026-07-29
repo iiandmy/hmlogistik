@@ -1,6 +1,8 @@
 import type { Buffer } from 'node:buffer';
 import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
+import type { QueryTransfersDto } from './dto/query-transfers.dto';
 import type { PaginatedTransfersResponse, TransferResponse } from './interfaces/transfer-response.interface';
+import type { TransfersService } from './transfers.service';
 import {
     Body,
     Controller,
@@ -17,9 +19,7 @@ import {
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ParseMultipartBodyPipe } from '../../common/pipes/parse-multipart-body.pipe';
 import { CreateTransferDto } from './dto/create-transfer.dto';
-import { QueryTransfersDto } from './dto/query-transfers.dto';
 import { UpdateTransferDto } from './dto/update-transfer.dto';
-import { TransfersService } from './transfers.service';
 
 interface MulterFile {
     buffer: Buffer;
