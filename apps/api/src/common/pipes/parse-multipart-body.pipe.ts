@@ -1,4 +1,4 @@
-import type { PipeTransform } from '@nestjs/common';
+import { PipeTransform } from '@nestjs/common';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';

@@ -1,4 +1,4 @@
-import type { PipeTransform } from '@nestjs/common';
+import { PipeTransform } from '@nestjs/common';
 import type { UploadedFile } from '../../modules/files/interfaces/transfer-file-response.interface';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';

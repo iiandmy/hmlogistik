@@ -1,5 +1,5 @@
-import type { PrismaService } from '../../providers/prisma/prisma.service';
-import type { FilesService } from '../files/files.service';
+import { PrismaService } from '../../providers/prisma/prisma.service';
+import { FilesService } from '../files/files.service';
 import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
 import type { CreateTransferDto } from './dto/create-transfer.dto';
 import type { QueryTransfersDto } from './dto/query-transfers.dto';
