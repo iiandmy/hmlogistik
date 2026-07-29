@@ -1,6 +1,6 @@
 import type { OnModuleDestroy } from '@nestjs/common';
-import type { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 
 @Injectable()

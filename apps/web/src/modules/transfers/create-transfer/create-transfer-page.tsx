@@ -2,11 +2,10 @@ import type { UploadFile } from 'antd';
 import type { FC } from 'react';
 import type { Transfer } from '~utils/types/types';
 import { LeftOutlined } from '@ant-design/icons';
-import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { App, Button, Flex, Form, Typography } from 'antd';
 import { useState } from 'react';
-import { createTransfer } from '~api/transfers';
+import { useCreateTransfer } from '~api/transfers';
 import { TransferForm } from '~components/transfer-form';
 import styles from './create-transfer-page.module.css';
 
@@ -28,8 +27,7 @@ export const CreateTransferPage: FC = () => {
         navigate({ to: '/transfers' });
     };
 
-    const { mutate, isPending } = useMutation({
-        mutationFn: createTransfer,
+    const { mutate, isPending } = useCreateTransfer({
         onError: handleCreateTransferError,
         onSuccess: handleCreateTransferSuccess,
     });

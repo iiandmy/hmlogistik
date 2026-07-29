@@ -17,7 +17,7 @@ interface Props {
     children: ReactNode;
 }
 
-function getActiveTabKey(pathname: string): TabKey {
+const getActiveTabKey = (pathname: string): TabKey => {
     if (pathname.startsWith('/avia-transfers')) {
         return 'aviaTransfers';
     }
@@ -32,7 +32,7 @@ function getActiveTabKey(pathname: string): TabKey {
     }
 
     return 'transfers';
-}
+};
 
 export const TabsLayout: FC<Props> = ({ children }) => {
     const navigate = useNavigate();

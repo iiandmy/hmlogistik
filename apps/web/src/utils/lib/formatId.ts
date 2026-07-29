@@ -13,9 +13,9 @@
  * formatId(0)       // "П-00/000"
  * formatId(123456)  // "П-23/456" (использованы последние 5 цифр)
  */
-export function formatId(id: number, prefix: string = 'П'): string {
+export const formatId = (id: number, prefix: string = 'П'): string => {
     const num = Math.floor(Math.abs(id));
     const padded = String(num).slice(-5).padStart(5, '0');
 
     return `${prefix}-${padded.substring(0, 2)}/${padded.substring(2)}`;
-}
+};

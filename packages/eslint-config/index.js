@@ -32,6 +32,9 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 'style/semi': ['error', 'always'],
                 'node/prefer-global/process': 'off',
                 'node/prefer-global/buffer': 'off',
+                'antfu/top-level-function': 'off',
+                'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+                'arrow-body-style': ['error', 'as-needed'],
             },
         },
         {
@@ -45,7 +48,6 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 },
             },
             rules: {
-                'antfu/top-level-function': 'off',
                 'react-legacy/function-component-definition': [
                     'error',
                     {

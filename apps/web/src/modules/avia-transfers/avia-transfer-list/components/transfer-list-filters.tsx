@@ -10,16 +10,14 @@ interface Props {
 export const TransferListFilters: FC<Props> = ({
     onSearchQueryChange,
     searchQuery,
-}) => {
-    return (
-        <Space className={styles.filters_container}>
-            <Input
-                placeholder="Поиск по перевозчику, получателю или № контейнера"
-                allowClear
-                value={searchQuery}
-                onChange={onSearchQueryChange}
-                className={styles.search_input}
-            />
-        </Space>
-    );
-};
+}) => (
+    <Space className={styles.filters_container}>
+        <Input
+            placeholder="Поиск по перевозчику, получателю или № контейнера"
+            allowClear
+            value={searchQuery}
+            onChange={onSearchQueryChange}
+            className={styles.search_input}
+        />
+    </Space>
+);

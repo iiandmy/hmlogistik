@@ -1,8 +1,6 @@
 import type { Buffer } from 'node:buffer';
-import type { TransferFileResponse, UploadedFile } from '../files/interfaces/transfer-file-response.interface';
-import type { QueryTransfersDto } from './dto/query-transfers.dto';
+import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
 import type { PaginatedTransfersResponse, TransferResponse } from './interfaces/transfer-response.interface';
-import type { TransfersService } from './transfers.service';
 import {
     Body,
     Controller,
@@ -19,7 +17,9 @@ import {
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ParseMultipartBodyPipe } from '../../common/pipes/parse-multipart-body.pipe';
 import { CreateTransferDto } from './dto/create-transfer.dto';
+import { QueryTransfersDto } from './dto/query-transfers.dto';
 import { UpdateTransferDto } from './dto/update-transfer.dto';
+import { TransfersService } from './transfers.service';
 
 interface MulterFile {
     buffer: Buffer;
@@ -43,7 +43,13 @@ export class TransfersController {
 
     @Get()
     async findAll(
-        @Query(new ValidationPipe({ transform: true, whitelist: true }))
+        @Query(
+            new ValidationPipe({
+                transform: true,
+                whitelist: true,
+                forbidNonWhitelisted: true,
+            }),
+        )
         query: QueryTransfersDto,
     ): Promise<PaginatedTransfersResponse> {
         return this.transfersService.findAll(query);
@@ -55,7 +61,7 @@ export class TransfersController {
     }
 
     @Post()
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(AnyFilesInterceptor({ defParamCharset: 'utf8' }))
     async createMultipart(
         @UploadedFiles() multerFiles: MulterFile[],
         @Body(new ParseMultipartBodyPipe(CreateTransferDto))
@@ -67,7 +73,7 @@ export class TransfersController {
     }
 
     @Patch(':id')
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(AnyFilesInterceptor({ defParamCharset: 'utf8' }))
     async updateMultipart(
         @Param('id', ParseIntPipe) id: number,
         @UploadedFiles() multerFiles: MulterFile[],
@@ -80,10 +86,5 @@ export class TransfersController {
         const files = multerFilesToUploadedFiles(multerFiles);
         await this.transfersService.update(id, dto, files, removedFileIds);
         return null;
-    }
-
-    @Get(':id/files')
-    async getFiles(@Param('id', ParseIntPipe) id: number): Promise<TransferFileResponse[]> {
-        return this.transfersService.getFiles(id);
     }
 }

@@ -1,13 +1,19 @@
-export interface TransferDto {
+import type { Transfer, TransferFile } from '@hmlogistik/database';
+
+export type TransferFileDto = Omit<TransferFile, 'id' | 'transferId' | 'sizeBytes' | 'createdAt' | 'transfer'> & {
+    id: number;
+    sizeBytes: number;
+    createdAt: string;
+    downloadUrl: string;
+};
+
+export type TransferDto = Omit<Transfer, 'id' | 'createdAt' | 'shippedAt' | 'price' | 'files'> & {
     id: number;
     createdAt: string | null;
     shippedAt: string | null;
-    transporter: string;
-    receiver: string;
-    container: string | null;
     price: number;
-    cargo: string;
-}
+    files: TransferFileDto[];
+};
 
 export interface TransfersPagination {
     page: number;
@@ -42,15 +48,6 @@ export interface CreateTransferPayload {
 }
 
 export type UpdateTransferPayload = Partial<CreateTransferPayload>;
-
-export interface TransferFileDto {
-    id: number;
-    originalName: string;
-    mimeType: string;
-    sizeBytes: number;
-    createdAt: string;
-    downloadUrl: string;
-}
 
 export interface CreateTransferInput {
     payload: CreateTransferPayload;

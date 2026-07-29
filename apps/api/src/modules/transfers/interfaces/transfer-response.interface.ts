@@ -1,3 +1,5 @@
+import type { TransferFileResponse } from '../../files/interfaces/transfer-file-response.interface';
+
 export interface TransferResponse {
     id: number;
     createdAt: string | null;
@@ -7,6 +9,7 @@ export interface TransferResponse {
     container: string | null;
     price: number;
     cargo: string;
+    files: TransferFileResponse[];
 }
 
 export interface PaginationMeta {
