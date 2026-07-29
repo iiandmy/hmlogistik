@@ -10,5 +10,8 @@ COPY packages/database/prisma.config.ts ./packages/database/
 RUN npm install -g prisma@^7.9.0
 
 # DATABASE_URL is provided via docker-compose environment.
-# prisma.config.ts uses process.env.DATABASE_URL — no .env file needed.
-CMD ["prisma", "migrate", "deploy", "--schema=packages/database/prisma/schema.prisma"]
+# prisma.config.ts uses env('DATABASE_URL') which reads from .env,
+# so we create .env from the environment variable at runtime.
+CMD sh -c 'cd packages/database \
+  && echo "DATABASE_URL=$DATABASE_URL" > .env \
+  && npx prisma migrate deploy'
