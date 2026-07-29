@@ -1,3 +1,3 @@
 import hmlogistikEslintConfig from '@hmlogistik/eslint-config';
 
-export default hmlogistikEslintConfig();
+export default hmlogistikEslintConfig({ react: false });

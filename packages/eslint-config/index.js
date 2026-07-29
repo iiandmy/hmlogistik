@@ -1,10 +1,10 @@
 import antfu from '@antfu/eslint-config';
 import reactPlugin from 'eslint-plugin-react';
 
-export default function hmlogistikEslintConfig(...userConfigs) {
+export default function hmlogistikEslintConfig({ react: enableReact = true, ...userConfigs } = {}) {
     return antfu(
         {
-            react: true,
+            react: enableReact,
             stylistic: {
                 indent: 4,
                 quotes: 'single',
@@ -17,6 +17,9 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 '**/.turbo',
                 '**/coverage',
                 '**/prisma/generated',
+                '**/docs',
+                '**/skills-lock.json',
+                '**/*.md'
             ],
             typescript: {
                 overrides: {
@@ -53,6 +56,6 @@ export default function hmlogistikEslintConfig(...userConfigs) {
                 ],
             },
         },
-        ...userConfigs,
+        ...(Array.isArray(userConfigs) ? userConfigs : []),
     );
 }
