@@ -2,7 +2,7 @@ import type { Buffer } from 'node:buffer';
 import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
 import { QueryTransfersDto } from './dto/query-transfers.dto';
 import type { PaginatedTransfersResponse, TransferResponse } from './interfaces/transfer-response.interface';
-import type { TransfersService } from './transfers.service';
+import { TransfersService } from './transfers.service';
 import {
     Body,
     Controller,
