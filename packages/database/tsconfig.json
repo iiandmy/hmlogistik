@@ -7,6 +7,7 @@
         "rootDir": ".",
         "module": "nodenext",
         "moduleResolution": "nodenext",
+        "types": ["node"],
         "strict": true,
         "declaration": true,
         "declarationMap": true,
@@ -18,5 +19,5 @@
         "isolatedModules": true,
         "skipLibCheck": true
     },
-    "include": ["index.ts", "prisma/generated/**/*.ts"]
+    "include": ["index.ts", "prisma.config.ts", "prisma/generated/**/*.ts"]
 }
