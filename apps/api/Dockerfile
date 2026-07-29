@@ -4,6 +4,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 COPY apps/api/package.json apps/api/tsconfig.json apps/api/tsconfig.build.json apps/api/nest-cli.json apps/api/
 COPY packages/database/package.json packages/database/tsconfig.json packages/database/prisma.config.ts packages/database/
+COPY packages/eslint-config/package.json packages/eslint-config/
 
 RUN yarn install --frozen-lockfile
 
