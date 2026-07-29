@@ -36,6 +36,9 @@ WORKDIR /app
 # Copy compiled output
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
+# Copy package.json for NestJS module resolution
+COPY --from=builder /app/apps/api/package.json ./apps/api/
+
 # Copy compiled database package (needed at runtime for Prisma client)
 COPY --from=builder /app/packages/database/package.json ./packages/database/
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
