@@ -9,21 +9,27 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H '${{ secrets.HOST }}' >> ~/.ssh/known_hosts
 
-      - name: Deploy to DigitalOcean via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.HOST }}
-          username: root
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
+      - name: Show SSH key fingerprint
+        run: ssh-keygen -lf ~/.ssh/deploy_key
 
-            cd /opt/hmlogistik
+      - name: Test SSH connection
+        run: ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes root@${{ secrets.HOST }} 'hostname'
 
-            git pull --ff-only origin master
-
-            bash deploy.sh
-
-            docker image prune -f
+      - name: Deploy to DigitalOcean
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes root@${{ secrets.HOST }} <<'EOF'
+          set -euo pipefail
+          cd /opt/hmlogistik
+          git pull --ff-only origin master
+          bash deploy.sh
+          docker image prune -f
+          EOF
