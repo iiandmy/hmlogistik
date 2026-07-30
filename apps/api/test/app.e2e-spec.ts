@@ -65,6 +65,19 @@ describe('App (e2e)', () => {
         return request(app.getHttpServer()).get('/api/transfers').expect(200);
     });
 
+    it('GET /api/transfers accepts supported query params', () => {
+        return request(app.getHttpServer())
+            .get('/api/transfers')
+            .query({
+                page: '1',
+                limit: '10',
+                sortBy: 'createdAt',
+                order: 'desc',
+                q: 'test',
+            })
+            .expect(200);
+    });
+
     afterEach(async () => {
         await app.close();
     });
