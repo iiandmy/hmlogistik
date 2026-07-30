@@ -9,24 +9,24 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Configure known_hosts
         run: |
           install -m 700 -d ~/.ssh
-          printf '%s
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H '${{ secrets.HOST }}' >> ~/.ssh/known_hosts
+          ssh-keyscan -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Show SSH key fingerprint
-        run: ssh-keygen -lf ~/.ssh/deploy_key
+      - name: Show loaded SSH keys
+        run: ssh-add -l
 
       - name: Test SSH connection
-        run: ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes root@${{ secrets.HOST }} 'hostname'
+        run: ssh -o IdentitiesOnly=yes root@${{ secrets.HOST }} 'hostname'
 
       - name: Deploy to DigitalOcean
         run: |
-          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes root@${{ secrets.HOST }} <<'EOF'
+          ssh -o IdentitiesOnly=yes root@${{ secrets.HOST }} <<'EOF'
           set -euo pipefail
           cd /opt/hmlogistik
           git pull --ff-only origin master
