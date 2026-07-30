@@ -1,7 +1,10 @@
 import antfu from '@antfu/eslint-config';
 import reactPlugin from 'eslint-plugin-react';
 
-export default function hmlogistikEslintConfig({ react: enableReact = true, ...userConfigs } = {}) {
+export default function hmlogistikEslintConfig(
+    { react: enableReact = true } = {},
+    extraConfigs = [],
+) {
     return antfu(
         {
             react: enableReact,
@@ -56,6 +59,6 @@ export default function hmlogistikEslintConfig({ react: enableReact = true, ...u
                 ],
             },
         },
-        ...(Array.isArray(userConfigs) ? userConfigs : []),
+        ...(Array.isArray(extraConfigs) ? extraConfigs : []),
     );
 }

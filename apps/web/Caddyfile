@@ -1,0 +1,18 @@
+{$DOMAIN} {
+    encode zstd gzip
+
+    @api path /api/*
+    handle @api {
+        reverse_proxy api:3000
+    }
+
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}
+
+{$FILES_DOMAIN} {
+    reverse_proxy minio:9000
+}
