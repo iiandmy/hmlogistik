@@ -9,24 +9,26 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.9.0
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          name: id_ed25519
+          known_hosts: placeholder
+          if_key_exists: replace
 
       - name: Configure known_hosts
-        run: |
-          install -m 700 -d ~/.ssh
-          ssh-keyscan -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
+        run: ssh-keyscan -H "${{ secrets.HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Show loaded SSH keys
-        run: ssh-add -l
+      - name: Show SSH key fingerprint
+        run: ssh-keygen -lf ~/.ssh/id_ed25519
 
       - name: Test SSH connection
-        run: ssh root@${{ secrets.HOST }} 'hostname'
+        run: ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes root@${{ secrets.HOST }} 'hostname'
 
       - name: Deploy to DigitalOcean
         run: |
-          ssh root@${{ secrets.HOST }} <<'EOF'
+          ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes root@${{ secrets.HOST }} <<'EOF'
           set -euo pipefail
           cd /opt/hmlogistik
           git pull --ff-only origin master
