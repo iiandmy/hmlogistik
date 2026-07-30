@@ -53,14 +53,15 @@ services:
     image: hmlogistik-api:local
     profiles: ['tools']
     restart: 'no'
+    working_dir: /app/packages/database
     command:
-      - ./node_modules/.bin/prisma
+      - ../../node_modules/.bin/prisma
       - migrate
       - deploy
       - --schema
-      - packages/database/prisma/schema.prisma
+      - prisma/schema.prisma
       - --config
-      - packages/database/dist/prisma.config.js
+      - dist/prisma.config.js
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
