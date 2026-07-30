@@ -27,6 +27,16 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
         ),
     },
     {
+        title: 'Тип груза',
+        dataIndex: 'cargo',
+        key: 'cargo',
+    },
+    {
+        title: 'Цена, $',
+        dataIndex: 'price',
+        key: 'price',
+    },
+    {
         title: 'Выход',
         dataIndex: 'createdAt',
         key: 'createdAt',
@@ -56,15 +66,5 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
         dataIndex: 'container',
         render: (_, record) => record.container ?? '—',
         key: 'container',
-    },
-    {
-        title: 'Цена, $',
-        dataIndex: 'price',
-        key: 'price',
-    },
-    {
-        title: 'Тип груза',
-        dataIndex: 'cargo',
-        key: 'cargo',
     },
 ], []);
