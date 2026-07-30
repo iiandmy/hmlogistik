@@ -23,6 +23,10 @@ jobs:
       - name: Show SSH key fingerprint
         run: ssh-keygen -lf ~/.ssh/id_ed25519
 
+      - name: Verify SSH key fingerprint
+        run: |
+          test "$(ssh-keygen -lf ~/.ssh/id_ed25519 | awk '{print $2}')" = "SHA256:ahAVbt9vuOInbbHCh1v4py2ioqAhx5mi7/HgvOQmLW8"
+
       - name: Test SSH connection
         run: ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=yes root@${{ secrets.HOST }} 'hostname'
 
