@@ -39,18 +39,18 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/yarn.lock ./yarn.lock
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY package.json yarn.lock turbo.json ./
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/database/package.json ./packages/database/package.json
+COPY packages/eslint-config/package.json ./packages/eslint-config/package.json
+
+RUN yarn install --frozen-lockfile --production=true
+
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
-COPY --from=builder /app/apps/web/package.json ./apps/web/package.json
-COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder /app/packages/database/dist ./packages/database/dist
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
 COPY --from=builder /app/packages/database/prisma.config.ts ./packages/database/prisma.config.ts
-COPY --from=builder /app/packages/eslint-config/package.json ./packages/eslint-config/package.json
-COPY --from=builder /app/packages/eslint-config/index.js ./packages/eslint-config/index.js
 
 USER node
 
