@@ -22,11 +22,11 @@ jobs:
         run: ssh-add -l
 
       - name: Test SSH connection
-        run: ssh -o IdentitiesOnly=yes root@${{ secrets.HOST }} 'hostname'
+        run: ssh root@${{ secrets.HOST }} 'hostname'
 
       - name: Deploy to DigitalOcean
         run: |
-          ssh -o IdentitiesOnly=yes root@${{ secrets.HOST }} <<'EOF'
+          ssh root@${{ secrets.HOST }} <<'EOF'
           set -euo pipefail
           cd /opt/hmlogistik
           git pull --ff-only origin master
