@@ -87,6 +87,8 @@ Run Prisma migrations:
 docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
 ```
 
+The migration container runs Prisma from `/app/packages/database`, so it uses the same `prisma.config.ts` and `prisma/migrations` directory as the workspace itself.
+
 Start the application:
 
 ```bash
