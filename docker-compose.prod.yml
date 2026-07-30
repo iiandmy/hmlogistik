@@ -1,98 +1,93 @@
-version: '3.8'
-
 services:
-  # ── Database ──────────────────────────────────────────────────────────────
   postgres:
-    image: postgres:17-alpine
-    container_name: prod-postgres
+    image: postgres:17.6-alpine
     restart: unless-stopped
-    volumes:
-      - pgdata:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 20s
 
-  # ── Object Storage ────────────────────────────────────────────────────────
   minio:
-    image: minio/minio:latest
-    container_name: prod-minio
+    image: minio/minio:RELEASE.2026-07-23T15-54-02Z
     restart: unless-stopped
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
+    command: server /data --console-address ':9001'
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
+    volumes:
+      - minio_data:/data
 
-  # ── NestJS API ────────────────────────────────────────────────────────────
   api:
     build:
       context: .
       dockerfile: apps/api/Dockerfile
-      args:
-        DATABASE_URL: ${DATABASE_URL}
-    container_name: prod-api
+    image: hmlogistik-api:local
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL}
-      CORS_ORIGIN: https://${DOMAIN}
+      CORS_ORIGIN: ${CORS_ORIGIN}
       MINIO_ENDPOINT: minio
       MINIO_PORT: 9000
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET}
       MINIO_USE_SSL: 'false'
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL}
     depends_on:
       postgres:
         condition: service_healthy
       minio:
+        condition: service_started
+
+  migrate:
+    image: hmlogistik-api:local
+    profiles: ['tools']
+    restart: 'no'
+    command:
+      - ./node_modules/.bin/prisma
+      - migrate
+      - deploy
+      - --schema
+      - packages/database/prisma/schema.prisma
+      - --config
+      - packages/database/dist/prisma.config.js
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
         condition: service_healthy
 
-  # ── Frontend (SPA served via nginx) ───────────────────────────────────────
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-      args:
-        DATABASE_URL: ${DATABASE_URL}
-    container_name: prod-web
+    image: hmlogistik-web:local
     restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      FILES_DOMAIN: ${FILES_DOMAIN}
     depends_on:
       - api
-
-  # ── Reverse Proxy with automatic SSL ──────────────────────────────────────
-  caddy:
-    image: caddy:2-alpine
-    container_name: prod-caddy
-    restart: unless-stopped
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - web
-      - api
 
 volumes:
-  pgdata:
+  postgres_data:
   minio_data:
   caddy_data:
   caddy_config:

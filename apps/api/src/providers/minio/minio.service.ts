@@ -1,11 +1,11 @@
-import { OnModuleDestroy } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Injectable } from '@nestjs/common';
 import * as Minio from 'minio';
 
 @Injectable()
 export class MinioService implements OnModuleDestroy {
     private readonly client: Minio.Client;
+    private readonly publicClient: Minio.Client;
     private readonly defaultBucket: string;
 
     constructor(private readonly configService: ConfigService) {
@@ -14,6 +14,7 @@ export class MinioService implements OnModuleDestroy {
         const accessKey = this.configService.get<string>('minio.accessKey')!;
         const secretKey = this.configService.get<string>('minio.secretKey')!;
         const useSSL = this.configService.get<boolean>('minio.useSSL')!;
+        const publicUrl = this.configService.get<string>('minio.publicUrl');
         this.defaultBucket = this.configService.get<string>('minio.bucket')!;
 
         this.client = new Minio.Client({
@@ -23,10 +24,14 @@ export class MinioService implements OnModuleDestroy {
             secretKey,
             useSSL,
         });
+
+        this.publicClient = publicUrl
+            ? this.createPublicClient(publicUrl, accessKey, secretKey)
+            : this.client;
     }
 
     async onModuleDestroy(): Promise<void> {
-    // Minio.Client doesn't have a close/disconnect method in the current API
+        // Minio.Client doesn't have a close/disconnect method in the current API
     }
 
     async ensureBucket(bucket: string = this.defaultBucket): Promise<void> {
@@ -53,7 +58,7 @@ export class MinioService implements OnModuleDestroy {
         ttlSeconds: number = 60,
         bucket: string = this.defaultBucket,
     ): Promise<string> {
-        return this.client.presignedGetObject(bucket, objectPath, ttlSeconds);
+        return this.publicClient.presignedGetObject(bucket, objectPath, ttlSeconds);
     }
 
     async delete(
@@ -71,5 +76,21 @@ export class MinioService implements OnModuleDestroy {
             return;
         }
         await this.client.removeObjects(bucket, objectPaths);
+    }
+
+    private createPublicClient(
+        publicUrl: string,
+        accessKey: string,
+        secretKey: string,
+    ): Minio.Client {
+        const { hostname, port, protocol } = new URL(publicUrl);
+
+        return new Minio.Client({
+            endPoint: hostname,
+            port: port ? Number(port) : (protocol === 'https:' ? 443 : 80),
+            accessKey,
+            secretKey,
+            useSSL: protocol === 'https:',
+        });
     }
 }
