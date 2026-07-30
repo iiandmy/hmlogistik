@@ -61,7 +61,7 @@ services:
       - --schema
       - prisma/schema.prisma
       - --config
-      - dist/prisma.config.js
+      - prisma.config.ts
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
