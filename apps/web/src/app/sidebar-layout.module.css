@@ -1,0 +1,30 @@
+.layout {
+    min-height: 100vh;
+}
+
+.sider {
+    background: #ffffff;
+    border-right: 1px solid #f0f0f0;
+}
+
+.logo {
+    padding: 20px 16px 12px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.menu {
+    border-inline-end: none !important;
+}
+
+.content {
+    margin-top: 24px;
+    margin-inline: 36px;
+}
+
+@media (max-width: 991px) {
+    .content {
+        margin: 0 20px;
+        padding: 20px 0;
+    }
+}

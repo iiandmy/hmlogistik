@@ -1,19 +1,39 @@
-// TODO: implement when backend is ready
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+    CreateTransporterPayload,
+    TransporterDto,
+    UpdateTransporterPayload,
+} from '../types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { transportersApi } from './client';
+import { transporterKeys } from './queryKeys';
 
-// eslint-disable-next-line react/no-unnecessary-use-prefix
 export const useCreateTransporter = (
-    _options?: UseMutationOptions<never, Error, void>,
-): UseMutationResult<never, Error, void> =>
-    // stub
-    undefined as unknown as UseMutationResult<never, Error, void>
-;
+    options?: UseMutationOptions<TransporterDto, Error, CreateTransporterPayload>,
+): UseMutationResult<TransporterDto, Error, CreateTransporterPayload> => {
+    const queryClient = useQueryClient();
 
-// eslint-disable-next-line react/no-unnecessary-use-prefix
+    return useMutation({
+        mutationFn: (payload: CreateTransporterPayload) => transportersApi.create(payload),
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries({ queryKey: transporterKeys.all });
+            options?.onSuccess?.(...args);
+        },
+    });
+};
+
 export const useUpdateTransporter = (
-    _params: { id: string },
-    _options?: UseMutationOptions<never, Error, void>,
-): UseMutationResult<never, Error, void> =>
-    // stub
-    undefined as unknown as UseMutationResult<never, Error, void>
-;
+    params: { id: string },
+    options?: UseMutationOptions<TransporterDto, Error, UpdateTransporterPayload>,
+): UseMutationResult<TransporterDto, Error, UpdateTransporterPayload> => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: UpdateTransporterPayload) => transportersApi.update(params.id, payload),
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries({ queryKey: transporterKeys.all });
+            queryClient.invalidateQueries({ queryKey: transporterKeys.detail(params.id) });
+            options?.onSuccess?.(...args);
+        },
+    });
+};

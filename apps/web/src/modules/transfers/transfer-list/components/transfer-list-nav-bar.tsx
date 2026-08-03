@@ -8,7 +8,7 @@ export const TransferListNavBar: FC = () => {
 
     return (
         <Flex justify="space-between" align="center">
-            <Typography.Title>Отправки</Typography.Title>
+            <Typography.Title style={{ margin: 0 }}>Отправки</Typography.Title>
             <Button
                 onClick={() => navigate({ to: '/transfers/create' })}
                 type="primary"

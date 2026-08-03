@@ -1,8 +1,9 @@
 import type { ColumnsType } from 'antd/es/table';
+import type { JSX } from 'react';
 import type { TransferDto } from '~api/transfers';
 import { CheckCircleTwoTone } from '@ant-design/icons';
 import { Link } from '@tanstack/react-router';
-import { Tooltip, Typography } from 'antd';
+import { Flex, Tag, Tooltip, Typography } from 'antd';
 import { useMemo } from 'react';
 import { formatId } from '~utils/lib/formatId';
 import { TransporterColumn } from '../components/transfer-list-columns/transporter-column';
@@ -21,7 +22,7 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
                 )}
                 {' '}
                 <Typography.Link strong={!!record.shippedAt}>
-                    {formatId(record.id, 'ЖД')}
+                    {formatId(record.id)}
                 </Typography.Link>
             </Link>
         ),
@@ -58,8 +59,26 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
     },
     {
         title: 'Получатель',
-        dataIndex: 'receiver',
-        key: 'receiver',
+        dataIndex: 'receivers',
+        key: 'receivers',
+        render: (_, record): JSX.Element => {
+            const receivers = Array.isArray(record.receivers) ? record.receivers : [];
+            const hasOnlyPlaceholder = receivers.length === 1
+                && receivers[0]?.isPlaceholder
+                && !!record.legacyReceiver;
+
+            if (hasOnlyPlaceholder) {
+                return <Tag color="red">{record.legacyReceiver}</Tag>;
+            }
+
+            return (
+                <Flex gap={4} wrap>
+                    {receivers.map(receiver => (
+                        <Tag key={receiver.id}>{receiver.name}</Tag>
+                    ))}
+                </Flex>
+            );
+        },
     },
     {
         title: '№ Контейнера',

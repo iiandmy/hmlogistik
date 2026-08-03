@@ -1,19 +1,39 @@
-// TODO: implement when backend is ready
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import type {
+    CreateReceiverPayload,
+    ReceiverDto,
+    UpdateReceiverPayload,
+} from '../types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { receiversApi } from './client';
+import { receiverKeys } from './queryKeys';
 
-// eslint-disable-next-line react/no-unnecessary-use-prefix
 export const useCreateReceiver = (
-    _options?: UseMutationOptions<never, Error, void>,
-): UseMutationResult<never, Error, void> =>
-    // stub
-    undefined as unknown as UseMutationResult<never, Error, void>
-;
+    options?: UseMutationOptions<ReceiverDto, Error, CreateReceiverPayload>,
+): UseMutationResult<ReceiverDto, Error, CreateReceiverPayload> => {
+    const queryClient = useQueryClient();
 
-// eslint-disable-next-line react/no-unnecessary-use-prefix
+    return useMutation({
+        mutationFn: (payload: CreateReceiverPayload) => receiversApi.create(payload),
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries({ queryKey: receiverKeys.all });
+            options?.onSuccess?.(...args);
+        },
+    });
+};
+
 export const useUpdateReceiver = (
-    _params: { id: string },
-    _options?: UseMutationOptions<never, Error, void>,
-): UseMutationResult<never, Error, void> =>
-    // stub
-    undefined as unknown as UseMutationResult<never, Error, void>
-;
+    params: { id: string },
+    options?: UseMutationOptions<ReceiverDto, Error, UpdateReceiverPayload>,
+): UseMutationResult<ReceiverDto, Error, UpdateReceiverPayload> => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: UpdateReceiverPayload) => receiversApi.update(params.id, payload),
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries({ queryKey: receiverKeys.all });
+            queryClient.invalidateQueries({ queryKey: receiverKeys.detail(params.id) });
+            options?.onSuccess?.(...args);
+        },
+    });
+};

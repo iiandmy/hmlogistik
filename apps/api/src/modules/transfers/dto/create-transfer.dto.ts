@@ -1,9 +1,15 @@
+import { Type } from 'class-transformer';
 import {
+    ArrayNotEmpty,
+    ArrayUnique,
+    IsArray,
     IsDateString,
+    IsInt,
     IsNumber,
     IsOptional,
     IsPositive,
     IsString,
+    Min,
     MinLength,
 } from 'class-validator';
 
@@ -16,13 +22,18 @@ export class CreateTransferDto {
     @IsDateString()
     shippedAt?: string;
 
-    @IsString()
-    @MinLength(1)
-    transporter!: string;
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    transporterId!: number;
 
-    @IsString()
-    @MinLength(1)
-    receiver!: string;
+    @IsArray()
+    @ArrayNotEmpty()
+    @ArrayUnique()
+    @Type(() => Number)
+    @IsInt({ each: true })
+    @Min(1, { each: true })
+    receiverIds!: number[];
 
     @IsOptional()
     @IsString()

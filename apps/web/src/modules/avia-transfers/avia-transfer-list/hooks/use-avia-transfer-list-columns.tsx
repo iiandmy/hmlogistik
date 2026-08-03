@@ -1,32 +1,71 @@
 import type { ColumnsType } from 'antd/es/table';
-import type { AviaTransfer } from '../avia.types';
-import { Typography } from 'antd';
+import type { JSX } from 'react';
+import type { AviaTransferDto } from '~api/avia-transfers';
+import { Link } from '@tanstack/react-router';
+import { Flex, Tag, Typography } from 'antd';
 import { useMemo } from 'react';
 import { formatId } from '~utils/lib/formatId';
 import { CargoDataColumn } from '../components/transfer-list-columns/cargo-data-column';
 
-export const useAviaTransferListColumns = (): ColumnsType<AviaTransfer> => useMemo<ColumnsType<AviaTransfer>>(() => [
+export const useAviaTransferListColumns = (): ColumnsType<AviaTransferDto> => useMemo<ColumnsType<AviaTransferDto>>(() => [
     {
         title: '№',
         dataIndex: 'id',
         key: 'id',
         render: (_, record) => (
-            <Typography.Link>
-                {formatId(record.id, 'А')}
-            </Typography.Link>
+            <Link to="/avia-transfers/$id" params={{ id: String(record.id) }}>
+                <Typography.Link>
+                    {formatId(record.id, 'А')}
+                </Typography.Link>
+            </Link>
         ),
     },
     {
         title: 'Вылет',
         dataIndex: 'departedAt',
         key: 'departedAt',
-        render: (_, record) => record.departedAt?.format('DD/MM/YYYY') ?? '—',
+        render: (_, record) => record.departedAt ?? '—',
         sorter: true,
     },
     {
+        title: 'Перевозчик',
+        dataIndex: 'transporter',
+        key: 'transporter',
+        render: (_, record): JSX.Element => {
+            const transporter = typeof record.transporter === 'object' && record.transporter !== null
+                ? record.transporter
+                : null;
+            const isLegacy = !!transporter?.isPlaceholder && !!record.legacyTransporter;
+
+            return (
+                <Tag color={isLegacy ? 'red' : undefined}>
+                    {isLegacy ? record.legacyTransporter : (transporter?.name ?? record.legacyTransporter ?? '—')}
+                </Tag>
+            );
+        },
+    },
+    {
         title: 'Получатель',
-        dataIndex: 'receiver',
-        key: 'receiver',
+        dataIndex: 'receivers',
+        key: 'receivers',
+        render: (_, record): JSX.Element => {
+            const receivers = Array.isArray(record.receivers) ? record.receivers : [];
+            const hasOnlyPlaceholder = receivers.length === 1
+                && receivers[0]?.isPlaceholder
+                && !!record.legacyReceiver;
+
+            if (hasOnlyPlaceholder) {
+                return <Tag color="red">{record.legacyReceiver}</Tag>;
+            }
+
+            return (
+                <Flex gap={4} wrap>
+                    {receivers.map(receiver => (
+                        <Tag key={receiver.id}>{receiver.name}</Tag>
+                    ))}
+                </Flex>
+            );
+        },
     },
     {
         title: '№ Накладной',

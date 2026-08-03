@@ -5,4 +5,17 @@ export { AviaTransferErrorCode, AviaTransferNotFoundError } from './api/errors';
 export { useCreateAviaTransfer, useUpdateAviaTransfer } from './api/mutations';
 export { useAviaTransferDetail, useAviaTransfersList } from './api/queries';
 export { aviaTransferKeys } from './api/queryKeys';
-export { mapAviaTransferDtoToDatasource, mapAviaTransferDtoToForm } from './lib/mappers';
+export { mapAviaTransferDtoToDatasource, mapAviaTransferDtoToForm, mapAviaTransferFormToPayload } from './lib/mappers';
+export type {
+    AviaCargoData,
+    AviaTransferDto,
+    AviaTransferFormValues,
+    AviaTransfersPagination,
+    CreateAviaTransferInput,
+    CreateAviaTransferPayload,
+    GetAviaTransferByIdResponse,
+    GetAviaTransfersParams,
+    GetAviaTransfersResponse,
+    UpdateAviaTransferInput,
+    UpdateAviaTransferPayload,
+} from './types';

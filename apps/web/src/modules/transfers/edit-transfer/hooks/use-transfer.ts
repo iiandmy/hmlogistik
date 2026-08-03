@@ -1,8 +1,8 @@
-import type { Transfer } from '~utils/types/types';
+import type { TransferFormValues } from '~utils/types/types';
 import { mapTransferDtoToForm, useTransferDetail } from '~api/transfers';
 
 interface UseTransferResult {
-    transfer: Transfer | null;
+    transfer: TransferFormValues | null;
     files: import('~api/transfers').TransferFileDto[];
     isLoading: boolean;
     isError: boolean;

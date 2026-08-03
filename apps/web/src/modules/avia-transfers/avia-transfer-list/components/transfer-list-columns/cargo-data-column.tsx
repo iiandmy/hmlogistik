@@ -1,10 +1,10 @@
 import type { FC } from 'react';
-import type { AviaTransfer } from '~modules/avia-transfers/avia-transfer-list/avia.types';
+import type { AviaTransferDto } from '~api/avia-transfers';
 import { Flex, Tag } from 'antd';
 import styles from './cargo-data-column.module.css';
 
 interface Props {
-    record: AviaTransfer;
+    record: AviaTransferDto;
 }
 
 export const CargoDataColumn: FC<Props> = ({ record }) => (

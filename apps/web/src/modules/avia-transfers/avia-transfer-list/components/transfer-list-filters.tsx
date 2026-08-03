@@ -13,7 +13,7 @@ export const TransferListFilters: FC<Props> = ({
 }) => (
     <Space className={styles.filters_container}>
         <Input
-            placeholder="Поиск по перевозчику, получателю или № контейнера"
+            placeholder="Поиск по перевозчику, получателю или № накладной"
             allowClear
             value={searchQuery}
             onChange={onSearchQueryChange}

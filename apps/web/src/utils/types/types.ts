@@ -1,10 +1,12 @@
-import type { Transfer as PrismaTransfer } from '@hmlogistik/database';
 import type { Dayjs } from 'dayjs';
 
-export type Transfer = Omit<PrismaTransfer, 'id' | 'createdAt' | 'shippedAt' | 'price' | 'files'> & {
+export interface TransferFormValues {
     id: number;
     createdAt: Dayjs | null;
     shippedAt: Dayjs | null;
+    transporterId: number | null;
+    receiverIds: number[];
     container: string;
     price: string;
-};
+    cargo: string;
+}
