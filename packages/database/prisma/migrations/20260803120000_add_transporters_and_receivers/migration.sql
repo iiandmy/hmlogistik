@@ -25,6 +25,12 @@ CREATE TABLE "transporters" (
     CONSTRAINT "transporters_pkey" PRIMARY KEY ("id")
 );
 
+-- AlterTable
+ALTER TABLE "receivers" ALTER COLUMN "updated_at" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "transporters" ALTER COLUMN "updated_at" DROP DEFAULT;
+
 -- CreateTable
 CREATE TABLE "transporter_delay_rules" (
     "id" BIGSERIAL NOT NULL,
