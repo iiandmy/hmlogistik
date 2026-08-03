@@ -44,7 +44,6 @@ export const AviaTransferForm: FC<Props> = ({
         .filter(transporter => !transporter.isPlaceholder || transporter.id === transporterId)
         .map(transporter => ({
             value: transporter.id,
-            disabled: transporter.isPlaceholder,
             label: transporter.isPlaceholder
                 ? `${legacyTransporterName ?? ''} (Placeholder)`
                 : transporter.name,
@@ -53,7 +52,6 @@ export const AviaTransferForm: FC<Props> = ({
         .filter(receiver => !receiver.isPlaceholder || receiverIds.includes(receiver.id))
         .map(receiver => ({
             value: receiver.id,
-            disabled: receiver.isPlaceholder,
             label: receiver.isPlaceholder
                 ? `${legacyReceiverName ?? ''} (Placeholder)`
                 : receiver.name,
