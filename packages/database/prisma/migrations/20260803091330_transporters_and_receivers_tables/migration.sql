@@ -1,5 +1,4 @@
--- AlterTable
-ALTER TABLE "receivers" ALTER COLUMN "updated_at" DROP DEFAULT;
-
--- AlterTable
-ALTER TABLE "transporters" ALTER COLUMN "updated_at" DROP DEFAULT;
+-- No-op.
+-- This migration was generated before the tables below existed.
+-- The actual ALTER TABLE statements were moved to
+-- 20260803120000_add_transporters_and_receivers so migrations can be applied in order.
