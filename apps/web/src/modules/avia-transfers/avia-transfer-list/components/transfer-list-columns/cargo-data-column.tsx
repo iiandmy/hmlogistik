@@ -14,15 +14,17 @@ export const CargoDataColumn: FC<Props> = ({ record }) => (
             {' '}
             грузовых мест
         </Tag>
-        <Tag color="green">
-            {record.cargoData.volume}
-            {' '}
-            м³
-        </Tag>
-        <Tag color="green">
-            {record.cargoData.weight}
-            {' '}
-            кг
-        </Tag>
+        <Flex gap={4} wrap="wrap">
+            <Tag color="green">
+                {record.cargoData.volume}
+                {' '}
+                м³
+            </Tag>
+            <Tag color="green">
+                {record.cargoData.weight}
+                {' '}
+                кг
+            </Tag>
+        </Flex>
     </Flex>
 );
