@@ -10,6 +10,7 @@ import {
     useTransportersList,
     useUpdateTransporter,
 } from '~api/transporters';
+import styles from './transporters-page.module.css';
 
 interface TransporterDelayExceptionFormValue {
     receiverId: number | null;
@@ -88,6 +89,7 @@ export const TransportersPage: FC = () => {
                 <Typography.Title style={{ margin: 0 }}>Перевозчики</Typography.Title>
                 <Button
                     type="primary"
+                    size="large"
                     onClick={() => {
                         createForm.setFieldsValue({
                             type: 'Rail',
@@ -97,6 +99,7 @@ export const TransportersPage: FC = () => {
                         });
                         setIsCreateOpen(true);
                     }}
+                    className={styles.create_button}
                 >
                     Создать
                 </Button>
