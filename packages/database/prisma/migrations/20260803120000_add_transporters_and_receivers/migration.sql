@@ -25,12 +25,6 @@ CREATE TABLE "transporters" (
     CONSTRAINT "transporters_pkey" PRIMARY KEY ("id")
 );
 
--- AlterTable
-ALTER TABLE "receivers" ALTER COLUMN "updated_at" DROP DEFAULT;
-
--- AlterTable
-ALTER TABLE "transporters" ALTER COLUMN "updated_at" DROP DEFAULT;
-
 -- CreateTable
 CREATE TABLE "transporter_delay_rules" (
     "id" BIGSERIAL NOT NULL,
@@ -163,3 +157,9 @@ ALTER TABLE "avia_transfer_receivers" ADD CONSTRAINT "avia_transfer_receivers_av
 
 -- AddForeignKey
 ALTER TABLE "avia_transfer_receivers" ADD CONSTRAINT "avia_transfer_receivers_receiver_id_fkey" FOREIGN KEY ("receiver_id") REFERENCES "receivers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "receivers" ALTER COLUMN "updated_at" DROP DEFAULT;
+
+-- AlterTable
+ALTER TABLE "transporters" ALTER COLUMN "updated_at" DROP DEFAULT;
