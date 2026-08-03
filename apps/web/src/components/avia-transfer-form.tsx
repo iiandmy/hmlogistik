@@ -44,16 +44,18 @@ export const AviaTransferForm: FC<Props> = ({
         .filter(transporter => !transporter.isPlaceholder || transporter.id === transporterId)
         .map(transporter => ({
             value: transporter.id,
+            disabled: transporter.isPlaceholder,
             label: transporter.isPlaceholder
-                ? (legacyTransporterName ?? transporter.name)
+                ? `${legacyTransporterName ?? ''} (Placeholder)`
                 : transporter.name,
         }));
     const receiverOptions = receivers
         .filter(receiver => !receiver.isPlaceholder || receiverIds.includes(receiver.id))
         .map(receiver => ({
             value: receiver.id,
+            disabled: receiver.isPlaceholder,
             label: receiver.isPlaceholder
-                ? (legacyReceiverName ?? receiver.name)
+                ? `${legacyReceiverName ?? ''} (Placeholder)`
                 : receiver.name,
         }));
 
