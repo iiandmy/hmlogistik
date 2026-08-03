@@ -7,6 +7,7 @@ import {
     useReceiversList,
     useUpdateReceiver,
 } from '~api/receivers';
+import styles from './receivers-page.module.css';
 
 interface ReceiverFormValues {
     name: string;
@@ -45,7 +46,14 @@ export const ReceiversPage: FC = () => {
         <Flex vertical gap={16}>
             <Flex align="center" justify="space-between">
                 <Typography.Title style={{ margin: 0 }}>Получатели</Typography.Title>
-                <Button type="primary" onClick={() => setIsCreateOpen(true)}>Создать</Button>
+                <Button
+                    type="primary"
+                    size="large"
+                    onClick={() => setIsCreateOpen(true)}
+                    className={styles.create_button}
+                >
+                    Создать
+                </Button>
             </Flex>
 
             <Table
