@@ -1,7 +1,8 @@
 import type { ItemType, MenuItemType } from 'antd/es/menu/interface';
 import type { FC, ReactNode } from 'react';
+import { AuditOutlined, PullRequestOutlined } from '@ant-design/icons';
 import { useLocation, useNavigate } from '@tanstack/react-router';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Typography } from 'antd';
 import { useState } from 'react';
 import styles from './sidebar-layout.module.css';
 
@@ -26,6 +27,7 @@ const menuItems: ItemType<MenuItemType>[] = [
     {
         key: 'shipments',
         label: 'Отправки',
+        icon: <PullRequestOutlined />,
         children: [
             { key: 'transfers', label: 'ЖД' },
             { key: 'aviaTransfers', label: 'Авиа' },
@@ -34,6 +36,7 @@ const menuItems: ItemType<MenuItemType>[] = [
     {
         key: 'directories',
         label: 'Справочники',
+        icon: <AuditOutlined />,
         children: [
             { key: 'transporters', label: 'Перевозчики' },
             { key: 'receivers', label: 'Получатели' },
@@ -76,10 +79,12 @@ export const SidebarLayout: FC<Props> = ({ children }) => {
     const visibleOpenKeys = openKeys.includes(activeGroupKey) ? openKeys : [activeGroupKey];
 
     return (
-        <Layout className={styles.layout}>
+        <Layout hasSider className={styles.layout}>
             <Sider breakpoint="lg" collapsedWidth="0" width={240} className={styles.sider}>
                 <div className={styles.logo}>
-                    HM Logistik
+                    <Typography.Title level={3}>
+                        HM Logistik
+                    </Typography.Title>
                 </div>
                 <Menu
                     mode="inline"
