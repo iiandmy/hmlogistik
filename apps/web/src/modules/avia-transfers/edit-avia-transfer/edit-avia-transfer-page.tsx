@@ -17,7 +17,13 @@ export const EditAviaTransferPage: FC = () => {
     const { message } = App.useApp();
     const { id } = useParams({ from: '/avia-transfers/$id' });
 
-    const { transfer, isLoading, isError } = useAviaTransfer(id);
+    const {
+        transfer,
+        legacyTransporterName,
+        legacyReceiverName,
+        isLoading,
+        isError,
+    } = useAviaTransfer(id);
     const [error, setError] = useState<string | null>(null);
     const [isDirty, setIsDirty] = useState(false);
     const { data: transportersData } = useTransportersList({ type: 'Avia' });
@@ -87,6 +93,8 @@ export const EditAviaTransferPage: FC = () => {
                         initialValues={transfer}
                         onFinish={onEditTransfer}
                         error={error}
+                        legacyTransporterName={legacyTransporterName}
+                        legacyReceiverName={legacyReceiverName}
                         onValuesChange={() => setIsDirty(true)}
                         transporters={transportersData?.items ?? []}
                         receivers={receiversData?.items ?? []}

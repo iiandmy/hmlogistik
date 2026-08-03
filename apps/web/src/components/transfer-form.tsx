@@ -20,6 +20,8 @@ interface Props {
     form: FormInstance<TransferFormValues>;
     error: string | null;
     initialValues?: TransferFormValues;
+    legacyTransporterName?: string | null;
+    legacyReceiverName?: string | null;
     onFinish: (values: TransferFormValues) => void;
     onValuesChange?: (changedValues: Partial<TransferFormValues>, allValues: TransferFormValues) => void;
     fileList: UploadFile[];
@@ -44,6 +46,8 @@ export const TransferForm: FC<Props> = ({
     initialValues,
     onFinish,
     error,
+    legacyTransporterName,
+    legacyReceiverName,
     onValuesChange,
     fileList,
     onFileListChange,
@@ -52,6 +56,24 @@ export const TransferForm: FC<Props> = ({
     receivers,
 }) => {
     const { message } = App.useApp();
+    const transporterId = Form.useWatch('transporterId', form);
+    const receiverIds = Form.useWatch('receiverIds', form) ?? [];
+    const transporterOptions = transporters
+        .filter(transporter => !transporter.isPlaceholder || transporter.id === transporterId)
+        .map(transporter => ({
+            value: transporter.id,
+            label: transporter.isPlaceholder
+                ? (legacyTransporterName ?? transporter.name)
+                : transporter.name,
+        }));
+    const receiverOptions = receivers
+        .filter(receiver => !receiver.isPlaceholder || receiverIds.includes(receiver.id))
+        .map(receiver => ({
+            value: receiver.id,
+            label: receiver.isPlaceholder
+                ? (legacyReceiverName ?? receiver.name)
+                : receiver.name,
+        }));
 
     const handleBeforeUpload = (file: File): boolean | typeof Upload.LIST_IGNORE => {
         if (fileList.length >= MAX_FILES_PER_TRANSFER) {
@@ -98,7 +120,7 @@ export const TransferForm: FC<Props> = ({
                             label="Перевозчик"
                             className={styles.full_width}
                         >
-                            <Select options={transporters.map(transporter => ({ value: transporter.id, label: transporter.name }))} />
+                            <Select options={transporterOptions} />
                         </Form.Item>
                         <Form.Item
                             rules={[
@@ -108,7 +130,7 @@ export const TransferForm: FC<Props> = ({
                             label="Получатель"
                             className={styles.full_width}
                         >
-                            <Select mode="multiple" options={receivers.map(receiver => ({ value: receiver.id, label: receiver.name }))} />
+                            <Select mode="multiple" options={receiverOptions} />
                         </Form.Item>
                     </Flex>
                     <Form.Item

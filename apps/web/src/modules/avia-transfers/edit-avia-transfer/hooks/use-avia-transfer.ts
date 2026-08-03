@@ -3,6 +3,8 @@ import { mapAviaTransferDtoToForm, useAviaTransferDetail } from '~api/avia-trans
 
 interface UseAviaTransferResult {
     transfer: AviaTransferFormValues | null;
+    legacyTransporterName: string | null;
+    legacyReceiverName: string | null;
     isLoading: boolean;
     isError: boolean;
 }
@@ -13,6 +15,8 @@ export const useAviaTransfer = (id: string): UseAviaTransferResult => {
     if (isError || !data) {
         return {
             transfer: null,
+            legacyTransporterName: null,
+            legacyReceiverName: null,
             isLoading,
             isError,
         };
@@ -20,6 +24,8 @@ export const useAviaTransfer = (id: string): UseAviaTransferResult => {
 
     return {
         transfer: mapAviaTransferDtoToForm(data),
+        legacyTransporterName: data.legacyTransporter,
+        legacyReceiverName: data.legacyReceiver,
         isLoading,
         isError: false,
     };

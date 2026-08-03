@@ -19,7 +19,14 @@ export const EditTransferPage: FC = () => {
     const { message } = App.useApp();
     const { id } = useParams({ from: '/transfers/$id' });
 
-    const { transfer, files: transferFiles, isLoading, isError } = useTransfer(id);
+    const {
+        transfer,
+        legacyTransporterName,
+        legacyReceiverName,
+        files: transferFiles,
+        isLoading,
+        isError,
+    } = useTransfer(id);
     const [diff, setDiff] = useState<Partial<TransferFormValues>>({});
     const [error, setError] = useState<string | null>(null);
     const [newFiles, setNewFiles] = useState<UploadFile[]>([]);
@@ -149,6 +156,8 @@ export const EditTransferPage: FC = () => {
                         initialValues={transfer}
                         onFinish={onEditTransfer}
                         error={error}
+                        legacyTransporterName={legacyTransporterName}
+                        legacyReceiverName={legacyReceiverName}
                         onValuesChange={onValuesChange}
                         fileList={fileList}
                         onFileListChange={onFileListChange}

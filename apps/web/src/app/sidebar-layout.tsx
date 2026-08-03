@@ -35,9 +35,9 @@ const menuItems: ItemType<MenuItemType>[] = [
         key: 'directories',
         label: 'Справочники',
         children: [
-            { key: 'cargo', label: 'Груз' },
             { key: 'transporters', label: 'Перевозчики' },
             { key: 'receivers', label: 'Получатели' },
+            { key: 'cargo', label: 'Груз' },
         ],
     },
 ];
