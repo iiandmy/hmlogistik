@@ -7,18 +7,27 @@ datasource db {
   provider = "postgresql"
 }
 
+enum TransporterType {
+  Rail
+  Avia
+}
+
 model Transfer {
-  id         BigInt    @id @default(autoincrement())
-  createdAt  DateTime? @map("created_at") @db.Timestamptz()
-  shippedAt  DateTime? @map("shipped_at") @db.Timestamptz()
-  transporter String
-  receiver   String
-  container  String?
-  price      Decimal   @db.Decimal(12, 2)
-  cargo      String
+  id                BigInt             @id @default(autoincrement())
+  createdAt         DateTime?          @map("created_at") @db.Timestamptz()
+  shippedAt         DateTime?          @map("shipped_at") @db.Timestamptz()
+  transporter       String
+  receiver          String
+  transporterId     BigInt             @map("transporter_id")
+  container         String?
+  price             Decimal            @db.Decimal(12, 2)
+  cargo             String
+  transporterRecord Transporter        @relation(fields: [transporterId], references: [id])
+  receiverLinks     TransferReceiver[]
 
   files TransferFile[]
 
+  @@index([transporterId])
   @@index([createdAt(sort: Desc)])
   @@index([shippedAt(sort: Desc)])
   @@index([price])
@@ -38,4 +47,90 @@ model TransferFile {
 
   @@index([transferId])
   @@map("transfer_files")
+}
+
+model AviaTransfer {
+  id                BigInt               @id @default(autoincrement())
+  departedAt        DateTime?            @map("departed_at") @db.Timestamptz()
+  invoiceNumber     String?              @map("invoice_number")
+  cargoSpaces       Int                  @map("cargo_spaces")
+  volume            Decimal              @db.Decimal(12, 3)
+  weight            Decimal              @db.Decimal(12, 3)
+  usdRate           Decimal?             @map("usd_rate") @db.Decimal(12, 2)
+  cnyRate           Decimal?             @map("cny_rate") @db.Decimal(12, 2)
+  transporter       String
+  receiver          String
+  transporterId     BigInt               @map("transporter_id")
+  transporterRecord Transporter          @relation(fields: [transporterId], references: [id])
+  receiverLinks     AviaTransferReceiver[]
+
+  @@index([transporterId])
+  @@index([departedAt(sort: Desc)])
+  @@index([invoiceNumber])
+  @@map("avia_transfers")
+}
+
+model Receiver {
+  id            BigInt                  @id @default(autoincrement())
+  name          String
+  isPlaceholder Boolean                 @default(false) @map("is_placeholder")
+  createdAt     DateTime                @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt     DateTime                @updatedAt @map("updated_at") @db.Timestamptz()
+  transfers     TransferReceiver[]
+  aviaTransfers AviaTransferReceiver[]
+  exceptions    TransporterDelayRule[]
+
+  @@unique([name])
+  @@map("receivers")
+}
+
+model Transporter {
+  id               BigInt                 @id @default(autoincrement())
+  name             String
+  type             TransporterType
+  isPlaceholder    Boolean                @default(false) @map("is_placeholder")
+  paymentDelayDays Int?                   @map("payment_delay_days")
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt        DateTime               @updatedAt @map("updated_at") @db.Timestamptz()
+  transfers        Transfer[]
+  aviaTransfers    AviaTransfer[]
+  delayRules       TransporterDelayRule[]
+
+  @@unique([name, type])
+  @@map("transporters")
+}
+
+model TransporterDelayRule {
+  id               BigInt      @id @default(autoincrement())
+  transporterId    BigInt      @map("transporter_id")
+  receiverId       BigInt      @map("receiver_id")
+  paymentDelayDays Int         @map("payment_delay_days")
+  transporter      Transporter @relation(fields: [transporterId], references: [id], onDelete: Cascade)
+  receiver         Receiver    @relation(fields: [receiverId], references: [id], onDelete: Restrict)
+
+  @@unique([transporterId, receiverId])
+  @@index([receiverId])
+  @@map("transporter_delay_rules")
+}
+
+model TransferReceiver {
+  transferId BigInt   @map("transfer_id")
+  receiverId BigInt   @map("receiver_id")
+  transfer   Transfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  receiver   Receiver @relation(fields: [receiverId], references: [id], onDelete: Restrict)
+
+  @@id([transferId, receiverId])
+  @@index([receiverId])
+  @@map("transfer_receivers")
+}
+
+model AviaTransferReceiver {
+  aviaTransferId BigInt       @map("avia_transfer_id")
+  receiverId     BigInt       @map("receiver_id")
+  aviaTransfer   AviaTransfer @relation(fields: [aviaTransferId], references: [id], onDelete: Cascade)
+  receiver       Receiver     @relation(fields: [receiverId], references: [id], onDelete: Restrict)
+
+  @@id([aviaTransferId, receiverId])
+  @@index([receiverId])
+  @@map("avia_transfer_receivers")
 }

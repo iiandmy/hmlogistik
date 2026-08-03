@@ -25,6 +25,15 @@ describe('App (e2e)', () => {
             delete: jest.fn<() => Promise<object>>().mockResolvedValue({}),
             count: jest.fn<() => Promise<number>>().mockResolvedValue(0),
         },
+        aviaTransfer: {
+            findMany: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+            findUnique: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            findFirst: jest.fn<() => Promise<null>>().mockResolvedValue(null),
+            create: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            update: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            delete: jest.fn<() => Promise<object>>().mockResolvedValue({}),
+            count: jest.fn<() => Promise<number>>().mockResolvedValue(0),
+        },
         transferFile: {
             findMany: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
             findUnique: jest.fn<() => Promise<null>>().mockResolvedValue(null),
@@ -72,6 +81,23 @@ describe('App (e2e)', () => {
                 page: '1',
                 limit: '10',
                 sortBy: 'createdAt',
+                order: 'desc',
+                q: 'test',
+            })
+            .expect(200);
+    });
+
+    it('GET /api/avia-transfers returns 200', () => {
+        return request(app.getHttpServer()).get('/api/avia-transfers').expect(200);
+    });
+
+    it('GET /api/avia-transfers accepts supported query params', () => {
+        return request(app.getHttpServer())
+            .get('/api/avia-transfers')
+            .query({
+                page: '1',
+                limit: '10',
+                sortBy: 'departedAt',
                 order: 'desc',
                 q: 'test',
             })

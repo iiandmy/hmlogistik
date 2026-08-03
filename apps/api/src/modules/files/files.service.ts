@@ -1,11 +1,11 @@
-import { MinioService } from '../../providers/minio/minio.service';
-import { PrismaService } from '../../providers/prisma/prisma.service';
 import type {
     TransferFileResponse,
     UploadedFile,
 } from './interfaces/transfer-file-response.interface';
 import { randomUUID } from 'node:crypto';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { MinioService } from '../../providers/minio/minio.service';
+import { PrismaService } from '../../providers/prisma/prisma.service';
 
 const MAX_FILES_PER_ENTITY = 10;
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;

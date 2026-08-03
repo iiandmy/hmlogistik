@@ -1,12 +1,14 @@
 import type { UploadFile } from 'antd';
 import type { FC } from 'react';
 import type { UpdateTransferPayload } from '~api/transfers';
-import type { Transfer } from '~utils/types/types';
+import type { TransferFormValues } from '~utils/types/types';
 import { CheckCircleTwoTone, LeftOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { App, Button, Card, Empty, Flex, Form, Skeleton, Tooltip, Typography } from 'antd';
 import { useMemo, useState } from 'react';
+import { useReceiversList } from '~api/receivers';
 import { useUpdateTransfer } from '~api/transfers';
+import { useTransportersList } from '~api/transporters';
 import { TransferForm } from '~components/transfer-form';
 import { useTransfer } from '~modules/transfers/edit-transfer/hooks/use-transfer';
 import { formatId } from '~utils/lib/formatId';
@@ -17,13 +19,22 @@ export const EditTransferPage: FC = () => {
     const { message } = App.useApp();
     const { id } = useParams({ from: '/transfers/$id' });
 
-    const { transfer, files: transferFiles, isLoading, isError } = useTransfer(id);
-    const [diff, setDiff] = useState<Partial<Transfer>>({});
+    const {
+        transfer,
+        legacyTransporterName,
+        legacyReceiverName,
+        files: transferFiles,
+        isLoading,
+        isError,
+    } = useTransfer(id);
+    const [diff, setDiff] = useState<Partial<TransferFormValues>>({});
     const [error, setError] = useState<string | null>(null);
     const [newFiles, setNewFiles] = useState<UploadFile[]>([]);
     const [removedFileIds, setRemovedFileIds] = useState<number[]>([]);
+    const { data: transportersData } = useTransportersList({ type: 'Rail' });
+    const { data: receiversData } = useReceiversList();
 
-    const [transferForm] = Form.useForm<Transfer>();
+    const [transferForm] = Form.useForm<TransferFormValues>();
 
     const shippedAt = Form.useWatch('shippedAt', transferForm);
 
@@ -68,11 +79,13 @@ export const EditTransferPage: FC = () => {
         const shippedAt = diff.shippedAt ? diff.shippedAt.toISOString() : diff.shippedAt;
 
         const payload: UpdateTransferPayload = {
-            ...diff,
             container: diff.container === undefined ? undefined : (diff.container.trim() ? diff.container : null),
             price: diff.price ? Number(diff.price) : undefined,
             createdAt,
             shippedAt,
+            cargo: diff.cargo === undefined ? undefined : diff.cargo.trim(),
+            transporterId: diff.transporterId === undefined || diff.transporterId === null ? undefined : Number(diff.transporterId),
+            receiverIds: diff.receiverIds,
         };
 
         mutate({
@@ -95,7 +108,7 @@ export const EditTransferPage: FC = () => {
         setNewFiles(nextFileList.filter(file => !file.uid.startsWith('existing-')));
     };
 
-    const onValuesChange = (changedValues: Partial<Transfer>): void => {
+    const onValuesChange = (changedValues: Partial<TransferFormValues>): void => {
         setDiff(prevDiff => ({ ...prevDiff, ...changedValues }));
     };
 
@@ -103,7 +116,7 @@ export const EditTransferPage: FC = () => {
     const hasErrors = Object.values(transferForm.getFieldsError()).some(field => field.errors.length > 0);
 
     return (
-        <Flex vertical className={styles.page_container}>
+        <Flex vertical>
             <Flex align="center">
                 <Button type="default" onClick={() => navigate({ to: '/transfers' })}>
                     <LeftOutlined />
@@ -134,7 +147,8 @@ export const EditTransferPage: FC = () => {
                             </Tooltip>
                         )}
                         {' '}
-                        Отправка №
+                        Отправка
+                        {' '}
                         {formatId(transfer.id)}
                     </Typography.Title>
                     <TransferForm
@@ -142,10 +156,14 @@ export const EditTransferPage: FC = () => {
                         initialValues={transfer}
                         onFinish={onEditTransfer}
                         error={error}
+                        legacyTransporterName={legacyTransporterName}
+                        legacyReceiverName={legacyReceiverName}
                         onValuesChange={onValuesChange}
                         fileList={fileList}
                         onFileListChange={onFileListChange}
                         onFileRemove={onFileRemove}
+                        transporters={transportersData?.items ?? []}
+                        receivers={receiversData?.items ?? []}
                     />
                     <Flex gap={8}>
                         <Tooltip

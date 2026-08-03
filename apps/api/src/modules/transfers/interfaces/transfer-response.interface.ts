@@ -1,11 +1,34 @@
 import type { TransferFileResponse } from '../../files/interfaces/transfer-file-response.interface';
 
+export interface TransferReceiverResponse {
+    id: number;
+    name: string;
+    isPlaceholder: boolean;
+}
+
+export interface TransferDelayRuleResponse {
+    receiverId: number;
+    receiverName: string;
+    paymentDelayDays: number;
+}
+
+export interface TransferTransporterResponse {
+    id: number;
+    name: string;
+    type: 'Rail';
+    isPlaceholder: boolean;
+    paymentDelayDays: number;
+    paymentDelayExceptions: TransferDelayRuleResponse[];
+}
+
 export interface TransferResponse {
     id: number;
     createdAt: string | null;
     shippedAt: string | null;
-    transporter: string;
-    receiver: string;
+    legacyTransporter: string | null;
+    legacyReceiver: string | null;
+    transporter: TransferTransporterResponse;
+    receivers: TransferReceiverResponse[];
     container: string | null;
     price: number;
     cargo: string;

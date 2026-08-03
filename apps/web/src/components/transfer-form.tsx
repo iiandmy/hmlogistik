@@ -1,8 +1,10 @@
 import type { FormInstance, FormProps, UploadFile } from 'antd';
 import type { FC } from 'react';
-import type { Transfer } from '~utils/types/types';
+import type { ReceiverDto } from '~api/receivers';
+import type { TransporterDto } from '~api/transporters';
+import type { TransferFormValues } from '~utils/types/types';
 import { UploadOutlined } from '@ant-design/icons';
-import { Alert, App, Button, Col, DatePicker, Divider, Flex, Form, Input, Row, Space, Upload } from 'antd';
+import { Alert, App, Button, Col, DatePicker, Divider, Flex, Form, Input, Row, Select, Space, Upload } from 'antd';
 import dayjs from 'dayjs';
 import styles from './transfer-form.module.css';
 
@@ -15,14 +17,18 @@ const layout: Pick<FormProps, 'labelCol' | 'wrapperCol' | 'labelWrap' | 'size' |
 };
 
 interface Props {
-    form: FormInstance<Transfer>;
+    form: FormInstance<TransferFormValues>;
     error: string | null;
-    initialValues?: Transfer;
-    onFinish: (values: Transfer) => void;
-    onValuesChange?: (changedValues: Partial<Transfer>, allValues: Transfer) => void;
+    initialValues?: TransferFormValues;
+    legacyTransporterName?: string | null;
+    legacyReceiverName?: string | null;
+    onFinish: (values: TransferFormValues) => void;
+    onValuesChange?: (changedValues: Partial<TransferFormValues>, allValues: TransferFormValues) => void;
     fileList: UploadFile[];
     onFileListChange: (fileList: UploadFile[]) => void;
     onFileRemove?: (file: UploadFile) => void;
+    transporters: TransporterDto[];
+    receivers: ReceiverDto[];
 }
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024;
@@ -40,12 +46,34 @@ export const TransferForm: FC<Props> = ({
     initialValues,
     onFinish,
     error,
+    legacyTransporterName,
+    legacyReceiverName,
     onValuesChange,
     fileList,
     onFileListChange,
     onFileRemove,
+    transporters,
+    receivers,
 }) => {
     const { message } = App.useApp();
+    const transporterId = Form.useWatch('transporterId', form);
+    const receiverIds = Form.useWatch('receiverIds', form) ?? [];
+    const transporterOptions = transporters
+        .filter(transporter => !transporter.isPlaceholder || transporter.id === transporterId)
+        .map(transporter => ({
+            value: transporter.id,
+            label: transporter.isPlaceholder
+                ? (legacyTransporterName ?? transporter.name)
+                : transporter.name,
+        }));
+    const receiverOptions = receivers
+        .filter(receiver => !receiver.isPlaceholder || receiverIds.includes(receiver.id))
+        .map(receiver => ({
+            value: receiver.id,
+            label: receiver.isPlaceholder
+                ? (legacyReceiverName ?? receiver.name)
+                : receiver.name,
+        }));
 
     const handleBeforeUpload = (file: File): boolean | typeof Upload.LIST_IGNORE => {
         if (fileList.length >= MAX_FILES_PER_TRANSFER) {
@@ -71,7 +99,7 @@ export const TransferForm: FC<Props> = ({
     };
 
     return (
-        <Form<Transfer>
+        <Form<TransferFormValues>
             {...layout}
             form={form}
             className={styles.form_layout}
@@ -86,23 +114,23 @@ export const TransferForm: FC<Props> = ({
                     <Flex gap={12}>
                         <Form.Item
                             rules={[
-                                { required: true, message: 'Введите перевозчика' },
+                                { required: true, message: 'Выберите перевозчика' },
                             ]}
-                            name="transporter"
+                            name="transporterId"
                             label="Перевозчик"
                             className={styles.full_width}
                         >
-                            <Input />
+                            <Select options={transporterOptions} />
                         </Form.Item>
                         <Form.Item
                             rules={[
-                                { required: true, message: 'Введите получателя' },
+                                { required: true, message: 'Выберите получателей' },
                             ]}
-                            name="receiver"
+                            name="receiverIds"
                             label="Получатель"
                             className={styles.full_width}
                         >
-                            <Input />
+                            <Select mode="multiple" options={receiverOptions} />
                         </Form.Item>
                     </Flex>
                     <Form.Item

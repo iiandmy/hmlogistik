@@ -1,4 +1,4 @@
-import type { Transfer, TransferFile } from '@hmlogistik/database';
+import type { TransferFile } from '@hmlogistik/database';
 
 export type TransferFileDto = Omit<TransferFile, 'id' | 'transferId' | 'sizeBytes' | 'createdAt' | 'transfer'> & {
     id: number;
@@ -7,13 +7,40 @@ export type TransferFileDto = Omit<TransferFile, 'id' | 'transferId' | 'sizeByte
     downloadUrl: string;
 };
 
-export type TransferDto = Omit<Transfer, 'id' | 'createdAt' | 'shippedAt' | 'price' | 'files'> & {
+export interface TransferReceiverDto {
+    id: number;
+    name: string;
+    isPlaceholder: boolean;
+}
+
+export interface TransferTransporterDelayDto {
+    receiverId: number;
+    receiverName: string;
+    paymentDelayDays: number;
+}
+
+export interface TransferTransporterDto {
+    id: number;
+    name: string;
+    type: 'Rail';
+    isPlaceholder: boolean;
+    paymentDelayDays: number;
+    paymentDelayExceptions: TransferTransporterDelayDto[];
+}
+
+export interface TransferDto {
     id: number;
     createdAt: string | null;
     shippedAt: string | null;
+    legacyTransporter: string | null;
+    legacyReceiver: string | null;
+    transporter: TransferTransporterDto;
+    receivers: TransferReceiverDto[];
+    container: string | null;
     price: number;
+    cargo: string;
     files: TransferFileDto[];
-};
+}
 
 export interface TransfersPagination {
     page: number;
@@ -40,8 +67,8 @@ export type GetTransferByIdResponse = TransferDto;
 export interface CreateTransferPayload {
     createdAt?: string | null;
     shippedAt?: string | null;
-    transporter: string;
-    receiver: string;
+    transporterId: number;
+    receiverIds: number[];
     container?: string | null;
     price: number;
     cargo: string;

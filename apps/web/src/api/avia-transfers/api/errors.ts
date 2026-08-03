@@ -1,6 +1,5 @@
-// TODO: implement when backend is ready
 export class AviaTransferNotFoundError extends Error {
-    constructor(message = 'Avia transfer not found') {
+    constructor(message = 'Отправка авиа не найдена') {
         super(message);
         this.name = 'AviaTransferNotFoundError';
     }

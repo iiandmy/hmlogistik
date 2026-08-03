@@ -5,7 +5,7 @@ import { AviaTransferList } from './components/avia-transfer-list';
 import { TransferListNavBar } from './components/transfer-list-nav-bar';
 
 export const AviaTransferListPage: FC = () => (
-    <Flex vertical>
+    <Flex vertical gap={16}>
         <TransferListNavBar />
         <AviaTransferList />
     </Flex>

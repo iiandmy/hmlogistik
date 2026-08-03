@@ -13,7 +13,7 @@
  * formatId(0)       // "П-00/000"
  * formatId(123456)  // "П-23/456" (использованы последние 5 цифр)
  */
-export const formatId = (id: number, prefix: string = 'П'): string => {
+export const formatId = (id: number, prefix: string = 'ЖД'): string => {
     const num = Math.floor(Math.abs(id));
     const padded = String(num).slice(-5).padStart(5, '0');
 

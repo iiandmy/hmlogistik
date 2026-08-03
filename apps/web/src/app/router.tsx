@@ -8,12 +8,15 @@ import {
 } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import z from 'zod';
-import { TabsLayout } from '~app/tabs-layout';
-import { CargoTabPage, ReceiversTabPage, TransportersTabPage } from '~app/tabs-route-pages';
+import { SidebarLayout } from '~app/sidebar-layout';
 import { AviaTransferListPage } from '~modules/avia-transfers/avia-transfer-list/avia-transfer-list-page';
 import { CreateAviaTransferPage } from '~modules/avia-transfers/create-avia-transfer/create-avia-transfer-page';
+import { EditAviaTransferPage } from '~modules/avia-transfers/edit-avia-transfer/edit-avia-transfer-page';
+import { CargoPage } from '~modules/cargo/cargo-page';
+import { ReceiversPage } from '~modules/receivers/receivers-page';
 import { CreateTransferPage } from '~modules/transfers/create-transfer/create-transfer-page';
 import { TransferListPage } from '~modules/transfers/transfer-list/transfer-list-page';
+import { TransportersPage } from '~modules/transporters/transporters-page';
 import { EditTransferPage } from '../modules/transfers/edit-transfer/edit-transfer-page';
 
 export const transfersSearchSchema = z.object({
@@ -24,10 +27,20 @@ export const transfersSearchSchema = z.object({
     q: z.string().optional().catch(undefined),
 });
 
+export const aviaTransfersSearchSchema = z.object({
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    limit: z.coerce.number().int().positive().optional().catch(undefined),
+    sortBy: z.enum(['departedAt']).optional().catch(undefined),
+    order: z.enum(['asc', 'desc']).optional().catch(undefined),
+    q: z.string().optional().catch(undefined),
+});
+
 const rootRoute = createRootRoute({
     component: () => (
         <>
-            <Outlet />
+            <SidebarLayout>
+                <Outlet />
+            </SidebarLayout>
             <TanStackRouterDevtools position="bottom-right" />
         </>
     ),
@@ -44,11 +57,7 @@ const rootIndexRoute = createRoute({
 const transfersRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/transfers',
-    component: () => (
-        <TabsLayout>
-            <Outlet />
-        </TabsLayout>
-    ),
+    component: Outlet,
     validateSearch: transfersSearchSchema,
 });
 
@@ -75,12 +84,8 @@ const createTransferRoute = createRoute({
 const aviaTransfersRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/avia-transfers',
-    component: () => (
-        <TabsLayout>
-            <Outlet />
-        </TabsLayout>
-    ),
-    validateSearch: transfersSearchSchema,
+    component: Outlet,
+    validateSearch: aviaTransfersSearchSchema,
 });
 
 const aviaTransfersIndexRoute = createRoute({
@@ -95,24 +100,30 @@ const createAviaTransferRoute = createRoute({
     component: CreateAviaTransferPage,
 });
 
+const aviaTransferRoute = createRoute({
+    getParentRoute: () => aviaTransfersRoute,
+    path: '$id',
+    component: EditAviaTransferPage,
+});
+
 // ── Simple tab pages (no nested routes) ─────────────────────────────────────
 
 const cargoRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/cargo',
-    component: CargoTabPage,
+    component: CargoPage,
 });
 
 const transportersRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/transporters',
-    component: TransportersTabPage,
+    component: TransportersPage,
 });
 
 const receiversRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/receivers',
-    component: ReceiversTabPage,
+    component: ReceiversPage,
 });
 
 // ── Route tree ──────────────────────────────────────────────────────────────
@@ -127,6 +138,7 @@ export const routeTree = rootRoute.addChildren([
     aviaTransfersRoute.addChildren([
         aviaTransfersIndexRoute,
         createAviaTransferRoute,
+        aviaTransferRoute,
     ]),
     cargoRoute,
     transportersRoute,
