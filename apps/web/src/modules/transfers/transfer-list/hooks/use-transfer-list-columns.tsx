@@ -30,6 +30,7 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
     {
         title: 'Тип груза',
         dataIndex: 'cargo',
+        width: 260,
         key: 'cargo',
     },
     {
@@ -45,11 +46,10 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
         sorter: true,
     },
     {
-        title: 'Доставлено',
-        dataIndex: 'shippedAt',
-        key: 'shippedAt',
-        render: (_, record) => record.shippedAt ?? '—',
-        sorter: true,
+        title: '№ Контейнера',
+        dataIndex: 'container',
+        render: (_, record) => record.container ?? '—',
+        key: 'container',
     },
     {
         title: 'Перевозчик',
@@ -81,9 +81,10 @@ export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<Co
         },
     },
     {
-        title: '№ Контейнера',
-        dataIndex: 'container',
-        render: (_, record) => record.container ?? '—',
-        key: 'container',
+        title: 'Доставлено',
+        dataIndex: 'shippedAt',
+        key: 'shippedAt',
+        render: (_, record) => record.shippedAt ?? '—',
+        sorter: true,
     },
 ], []);
