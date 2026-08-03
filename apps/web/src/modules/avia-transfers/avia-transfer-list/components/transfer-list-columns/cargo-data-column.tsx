@@ -15,16 +15,11 @@ export const CargoDataColumn: FC<Props> = ({ record }) => (
             грузовых мест
         </Tag>
         <Tag color="green">
-
-            Объем:
-            {' '}
             {record.cargoData.volume}
             {' '}
             м³
         </Tag>
         <Tag color="green">
-            Вес:
-            {' '}
             {record.cargoData.weight}
             {' '}
             кг
