@@ -1,7 +1,12 @@
-.form_container {
-    margin-top: 24px;
+.navigation_margin {
+    margin-bottom: 16px;
 }
 
 .card_not_found {
     margin-top: 24px;
+}
+
+.alert {
+    margin-bottom: 16px;
+    font-size: 22px;
 }

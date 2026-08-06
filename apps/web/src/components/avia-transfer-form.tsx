@@ -3,11 +3,13 @@ import type { FC } from 'react';
 import type { AviaTransferFormValues } from '~api/avia-transfers';
 import type { ReceiverDto } from '~api/receivers';
 import type { TransporterDto } from '~api/transporters';
-import { Alert, Col, DatePicker, Flex, Form, Input, InputNumber, Row, Select } from 'antd';
+import { Alert, Col, DatePicker, Divider, Flex, Form, Input, InputNumber, Row, Select, Upload } from 'antd';
 import dayjs from 'dayjs';
-import styles from './avia-transfer-form.module.css';
+import styles from './form-shared.module.css';
 
 dayjs.locale('ru');
+
+const invoiceNumberPattern = /^\d{3}-\d{8}$/;
 
 const layout: Pick<FormProps, 'labelCol' | 'wrapperCol' | 'labelWrap' | 'size' | 'layout'> = {
     labelWrap: true,
@@ -70,7 +72,7 @@ export const AviaTransferForm: FC<Props> = ({
             <Row gutter={{ xs: 0, lg: 24 }}>
                 <Col xs={24} lg={12}>
                     {error && <Alert title={error} type="error" showIcon style={{ marginBottom: 16 }} />}
-                    <Flex gap={12} vertical={false} wrap>
+                    <Flex gap={12}>
                         <Form.Item
                             rules={[{ required: true, message: 'Выберите перевозчика' }]}
                             name="transporterId"
@@ -88,77 +90,85 @@ export const AviaTransferForm: FC<Props> = ({
                             <Select mode="multiple" options={receiverOptions} />
                         </Form.Item>
                     </Flex>
-                    <Flex gap={12} vertical={false} wrap>
+                    <Flex gap={12}>
                         <Form.Item
-                            rules={[{ required: true, message: 'Введите номер накладной' }]}
+                            rules={[{ required: true, message: 'Введите кол-во мест' }]}
+                            name={['cargoData', 'cargoSpaces']}
+                            label="Грузовых мест"
+                            className={styles.full_width}
+                        >
+                            <InputNumber placeholder="0" min={0} className={styles.full_width} />
+                        </Form.Item>
+                        <Form.Item
+                            rules={[{ required: true, message: 'Введите объем' }]}
+                            name={['cargoData', 'volume']}
+                            label="Объем, м3"
+                            className={styles.full_width}
+                        >
+                            <InputNumber placeholder="0" min={0} className={styles.full_width} />
+                        </Form.Item>
+                        <Form.Item
+                            rules={[{ required: true, message: 'Введите вес' }]}
+                            name={['cargoData', 'weight']}
+                            label="Вес, кг"
+                            className={styles.full_width}
+                        >
+                            <InputNumber placeholder="0" min={0} className={styles.full_width} />
+                        </Form.Item>
+                    </Flex>
+                    <Flex gap={12}>
+                        <Form.Item
+                            rules={[{ required: true, message: 'Введите номер накладной' }, {
+                                pattern: invoiceNumberPattern,
+                                message: 'Проверьте номер накладной',
+                            }]}
                             name="invoiceNumber"
                             label="Номер накладной"
                             className={styles.full_width}
                         >
-                            <Input />
+                            <Input placeholder="000-00000000" />
                         </Form.Item>
                         <Form.Item
-                            name="departedAt"
-                            label="Вылет"
+                            name="usdRate"
+                            label="Ставка, $"
                             className={styles.full_width}
                         >
-                            <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                            <InputNumber placeholder="0.00" min={0} className={styles.full_width} />
+                        </Form.Item>
+                        <Form.Item
+                            name="cnyRate"
+                            label="Ставка, ¥"
+                            className={styles.full_width}
+                        >
+                            <InputNumber placeholder="0.00" min={0} className={styles.full_width} />
                         </Form.Item>
                     </Flex>
+                    <Form.Item
+                        name="departedAt"
+                        label="Вылет"
+                        className={styles.full_width}
+                    >
+                        <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                    </Form.Item>
                 </Col>
-                <Col xs={24} lg={12}>
-                    <Row gutter={12}>
-                        <Col xs={24} sm={8}>
-                            <Form.Item
-                                rules={[{ required: true, message: 'Введите кол-во мест' }]}
-                                name={['cargoData', 'cargoSpaces']}
-                                label="Грузовых мест"
-                                className={styles.full_width}
-                            >
-                                <InputNumber min={0} className={styles.full_width} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                            <Form.Item
-                                rules={[{ required: true, message: 'Введите объем' }]}
-                                name={['cargoData', 'volume']}
-                                label="Объем, м3"
-                                className={styles.full_width}
-                            >
-                                <InputNumber min={0} className={styles.full_width} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={8}>
-                            <Form.Item
-                                rules={[{ required: true, message: 'Введите вес' }]}
-                                name={['cargoData', 'weight']}
-                                label="Вес, кг"
-                                className={styles.full_width}
-                            >
-                                <InputNumber min={0} className={styles.full_width} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={12}>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="usdRate"
-                                label="Ставка, $"
-                                className={styles.full_width}
-                            >
-                                <InputNumber min={0} className={styles.full_width} />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} sm={12}>
-                            <Form.Item
-                                name="cnyRate"
-                                label="Ставка, ¥"
-                                className={styles.full_width}
-                            >
-                                <InputNumber min={0} className={styles.full_width} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                <Col span={1} className={styles.full_height}>
+                    <Divider vertical className={styles.full_height} />
+                </Col>
+                <Col span={10}>
+                    <Form.Item
+                        label="Файлы"
+                        extra="До 10 файлов размером до 20МБ, .pdf, .docx, .xlsx"
+                    >
+                        <Upload
+                            multiple
+                            accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx"
+                            listType="picture"
+                            fileList={[]}
+                            showUploadList={{ showDownloadIcon: true }}
+                        >
+                            <Alert className={styles.full_width} type="info" showIcon title="В разработке" />
+                        </Upload>
+                    </Form.Item>
                 </Col>
             </Row>
         </Form>

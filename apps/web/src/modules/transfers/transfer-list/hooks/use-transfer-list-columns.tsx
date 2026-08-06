@@ -1,31 +1,17 @@
 import type { ColumnsType } from 'antd/es/table';
 import type { JSX } from 'react';
-import type { TransferDto } from '~api/transfers';
-import { CheckCircleTwoTone } from '@ant-design/icons';
-import { Link } from '@tanstack/react-router';
-import { Flex, Tag, Tooltip, Typography } from 'antd';
+import type { TransferDatasource } from '~api/transfers/types';
+import { Flex, Tag } from 'antd';
 import { useMemo } from 'react';
-import { formatId } from '~utils/lib/formatId';
+import { IdColumn } from '../components/transfer-list-columns/id-column';
 import { TransporterColumn } from '../components/transfer-list-columns/transporter-column';
 
-export const useTransferListColumns = (): ColumnsType<TransferDto> => useMemo<ColumnsType<TransferDto>>(() => [
+export const useTransferListColumns = (): ColumnsType<TransferDatasource> => useMemo<ColumnsType<TransferDatasource>>(() => [
     {
         title: '№',
         dataIndex: 'id',
         key: 'id',
-        render: (_, record) => (
-            <Link to="/transfers/$id" params={{ id: String(record.id) }}>
-                {record.shippedAt && (
-                    <Tooltip title="Отправка доставлена">
-                        <CheckCircleTwoTone twoToneColor="#13ba00" />
-                    </Tooltip>
-                )}
-                {' '}
-                <Typography.Link strong={!!record.shippedAt}>
-                    {formatId(record.id)}
-                </Typography.Link>
-            </Link>
-        ),
+        render: (_, record) => <IdColumn record={record} />,
     },
     {
         title: 'Тип груза',

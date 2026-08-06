@@ -8,9 +8,11 @@
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "typecheck": "yarn tsc --noEmit"
     },
     "dependencies": {
+        "@ant-design/colors": "^8.0.1",
         "@ant-design/icons": "6.x",
         "@hmlogistik/database": "*",
         "@tanstack/react-query": "^5.101.3",

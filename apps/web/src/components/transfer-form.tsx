@@ -4,9 +4,9 @@ import type { ReceiverDto } from '~api/receivers';
 import type { TransporterDto } from '~api/transporters';
 import type { TransferFormValues } from '~utils/types/types';
 import { UploadOutlined } from '@ant-design/icons';
-import { Alert, App, Button, Col, DatePicker, Divider, Flex, Form, Input, Row, Select, Space, Upload } from 'antd';
+import { Alert, App, Button, Col, DatePicker, Divider, Flex, Form, Input, InputNumber, Row, Select, Space, Upload } from 'antd';
 import dayjs from 'dayjs';
-import styles from './transfer-form.module.css';
+import styles from './form-shared.module.css';
 
 dayjs.locale('ru');
 
@@ -40,6 +40,8 @@ const ACCEPTED_MIME_TYPES = new Set([
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 ]);
+
+const containerNumberFormat = /^[A-Z]{4}\d{7}$/i;
 
 export const TransferForm: FC<Props> = ({
     form,
@@ -130,7 +132,7 @@ export const TransferForm: FC<Props> = ({
                             label="Получатель"
                             className={styles.full_width}
                         >
-                            <Select mode="multiple" options={receiverOptions} />
+                            <Select allowClear mode="multiple" options={receiverOptions} />
                         </Form.Item>
                     </Flex>
                     <Form.Item
@@ -141,15 +143,19 @@ export const TransferForm: FC<Props> = ({
                         label="Груз"
                         className={styles.full_width}
                     >
-                        <Input />
+                        <Input placeholder="Скутеры, цепи, звезды" />
                     </Form.Item>
                     <Flex gap={12} style={{ flex: 1 }}>
                         <Form.Item
+                            rules={[{
+                                pattern: containerNumberFormat,
+                                message: 'Проверьте номер контейнера',
+                            }]}
                             name="container"
                             label="Контейнер"
                             className={styles.full_width}
                         >
-                            <Input />
+                            <Input placeholder="AAAA0000000" />
                         </Form.Item>
                         <Form.Item
                             required
@@ -169,7 +175,11 @@ export const TransferForm: FC<Props> = ({
                                     name="price"
                                     noStyle
                                 >
-                                    <Input min={0} type="number" />
+                                    <InputNumber
+                                        min={0}
+                                        placeholder="0.00"
+                                        className={styles.full_width}
+                                    />
                                 </Form.Item>
                             </Space.Compact>
                         </Form.Item>

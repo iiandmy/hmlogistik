@@ -2,7 +2,8 @@ import type { UploadFile } from 'antd';
 import type { FC } from 'react';
 import type { UpdateTransferPayload } from '~api/transfers';
 import type { TransferFormValues } from '~utils/types/types';
-import { CheckCircleTwoTone, LeftOutlined } from '@ant-design/icons';
+import { green, yellow } from '@ant-design/colors';
+import { CheckCircleTwoTone, LeftOutlined, WarningTwoTone } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { App, Button, Card, Empty, Flex, Form, Skeleton, Tooltip, Typography } from 'antd';
 import { useMemo, useState } from 'react';
@@ -11,7 +12,9 @@ import { useUpdateTransfer } from '~api/transfers';
 import { useTransportersList } from '~api/transporters';
 import { TransferForm } from '~components/transfer-form';
 import { useTransfer } from '~modules/transfers/edit-transfer/hooks/use-transfer';
-import { formatId } from '~utils/lib/formatId';
+import { formatId } from '~utils/lib/format-id';
+import { getPaymentDelayExceptionContent } from '~utils/lib/get-payment-delay-exception-content';
+import { getPaymentDelayExceptionFlags } from '~utils/lib/get-payment-delay-exception-flags';
 import styles from './edit-transfer-page.module.css';
 
 export const EditTransferPage: FC = () => {
@@ -37,6 +40,25 @@ export const EditTransferPage: FC = () => {
     const [transferForm] = Form.useForm<TransferFormValues>();
 
     const shippedAt = Form.useWatch('shippedAt', transferForm);
+    const transporterId = Form.useWatch('transporterId', transferForm);
+    const receiverIds = Form.useWatch('receiverIds', transferForm) as number[] | undefined;
+
+    const transporter = transportersData?.items.find(transporter => transporter.id === transporterId);
+    const receivers = receiversData?.items.filter(receiver => receiverIds?.includes(receiver.id));
+    const exceptionFlags = shippedAt && transporter
+        ? getPaymentDelayExceptionFlags({
+                paymentDelayDays: transporter.paymentDelayDays,
+                paymentDelayExceptions: transporter.paymentDelayExceptions.map(exception => ({
+                    receiverId: exception.receiver.id,
+                    receiverName: exception.receiver.name,
+                    paymentDelayDays: exception.paymentDelayDays,
+                })),
+            }, receivers ?? [], shippedAt)
+        : {};
+    const { shouldShowPaymentDelayException, tooltipContent } = getPaymentDelayExceptionContent({
+        paymentExceptionFlags: exceptionFlags,
+        receivers: receivers ?? [],
+    });
 
     const handleEditTransferError = (): void => {
         setError('Ошибка при редактировании отправки');
@@ -117,7 +139,7 @@ export const EditTransferPage: FC = () => {
 
     return (
         <Flex vertical>
-            <Flex align="center">
+            <Flex align="center" className={styles.navigation_margin}>
                 <Button type="default" onClick={() => navigate({ to: '/transfers' })}>
                     <LeftOutlined />
                     <Typography.Text>Назад</Typography.Text>
@@ -127,30 +149,35 @@ export const EditTransferPage: FC = () => {
                 <Skeleton
                     active
                     paragraph={{ rows: 8 }}
-                    style={{ marginTop: 16 }}
                 />
             )}
             {!isLoading && (isError || !transfer) && (
                 <Card className={styles.card_not_found}>
                     <Empty
                         description="Не найдено"
-                        style={{ marginTop: 16 }}
                     />
                 </Card>
             )}
             {!isLoading && transfer && (
                 <>
-                    <Typography.Title>
-                        {shippedAt && (
+                    <Flex align="center" gap={4}>
+                        {shippedAt && !shouldShowPaymentDelayException && (
                             <Tooltip title="Отправка доставлена">
-                                <CheckCircleTwoTone twoToneColor="#13ba00" />
+                                <CheckCircleTwoTone twoToneColor={green[5]} className={styles.alert} />
                             </Tooltip>
                         )}
-                        {' '}
-                        Отправка
-                        {' '}
-                        {formatId(transfer.id)}
-                    </Typography.Title>
+                        {shouldShowPaymentDelayException && (
+                            <Tooltip title={tooltipContent}>
+                                <WarningTwoTone twoToneColor={yellow[6]} className={styles.alert} />
+                                {' '}
+                            </Tooltip>
+                        )}
+                        <Typography.Title>
+                            Отправка
+                            {' '}
+                            {formatId(transfer.id)}
+                        </Typography.Title>
+                    </Flex>
                     <TransferForm
                         form={transferForm}
                         initialValues={transfer}

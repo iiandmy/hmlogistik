@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 import type { CreateTransporterPayload, TransporterDto, TransporterType } from '~api/transporters';
-import { EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import { App, Button, Flex, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
 import { useState } from 'react';
 import { useReceiversList } from '~api/receivers';
@@ -195,15 +195,22 @@ export const TransportersPage: FC = () => {
                     layout="vertical"
                     initialValues={{ type: 'Rail', paymentDelayDays: 0, paymentDelayExceptions: [] }}
                     onFinish={handleCreate}
+                    style={{ marginTop: '24px' }}
                 >
                     <Form.Item
                         name="name"
                         label="Название"
                         rules={[{ required: true, message: 'Введите название' }]}
+                        required={false}
                     >
                         <Input placeholder="Название перевозчика" />
                     </Form.Item>
-                    <Form.Item name="type" label="Тип" rules={[{ required: true, message: 'Выберите тип' }]}>
+                    <Form.Item
+                        name="type"
+                        label="Тип"
+                        rules={[{ required: true, message: 'Выберите тип' }]}
+                        required={false}
+                    >
                         <Select
                             options={[
                                 { value: 'Rail', label: 'ЖД' },
@@ -219,34 +226,43 @@ export const TransportersPage: FC = () => {
                                             name="paymentDelayDays"
                                             label="Отсрочка, дней"
                                             rules={[{ required: true, message: 'Введите отсрочку' }]}
+                                            required={false}
                                         >
                                             <InputNumber min={0} style={{ width: '100%' }} />
                                         </Form.Item>
                                         <Form.List name="paymentDelayExceptions">
                                             {(fields, { add, remove }) => (
-                                                <Flex vertical gap={12}>
-                                                    <Button type="dashed" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>
-                                                        + Добавить исключение
-                                                    </Button>
+                                                <Flex vertical gap={4}>
                                                     {fields.map(field => (
-                                                        <Space key={field.key} align="start" style={{ display: 'flex' }}>
+                                                        <Flex key={field.key} gap={4} justify="stretch">
                                                             <Form.Item
                                                                 name={[field.name, 'receiverId']}
                                                                 label="Получатель"
                                                                 rules={[{ required: true, message: 'Выберите получателя' }]}
+                                                                style={{ flex: 1 }}
+                                                                required={false}
                                                             >
-                                                                <Select style={{ width: 260 }} options={receiverOptions} />
+                                                                <Select options={receiverOptions} />
                                                             </Form.Item>
                                                             <Form.Item
                                                                 name={[field.name, 'paymentDelayDays']}
                                                                 label="Отсрочка, дней"
                                                                 rules={[{ required: true, message: 'Введите отсрочку' }]}
+                                                                style={{ width: 160 }}
+                                                                required={false}
                                                             >
-                                                                <InputNumber min={0} style={{ width: 180 }} />
+                                                                <InputNumber style={{ width: '100%' }} min={0} />
                                                             </Form.Item>
-                                                            <Button onClick={() => remove(field.name)}>Удалить</Button>
-                                                        </Space>
+                                                            <Form.Item label=" ">
+                                                                <Button danger onClick={() => remove(field.name)}>
+                                                                    <DeleteOutlined />
+                                                                </Button>
+                                                            </Form.Item>
+                                                        </Flex>
                                                     ))}
+                                                    <Button type="link" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>
+                                                        + Добавить исключение
+                                                    </Button>
                                                 </Flex>
                                             )}
                                         </Form.List>

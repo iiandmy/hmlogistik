@@ -4,7 +4,7 @@ import type { AviaTransferDto } from '~api/avia-transfers';
 import { Link } from '@tanstack/react-router';
 import { Flex, Tag, Typography } from 'antd';
 import { useMemo } from 'react';
-import { formatId } from '~utils/lib/formatId';
+import { formatId } from '~utils/lib/format-id';
 import { CargoDataColumn } from '../components/transfer-list-columns/cargo-data-column';
 
 export const useAviaTransferListColumns = (): ColumnsType<AviaTransferDto> => useMemo<ColumnsType<AviaTransferDto>>(() => [
