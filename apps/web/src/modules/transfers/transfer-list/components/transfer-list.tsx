@@ -1,6 +1,6 @@
 import type { TableProps } from 'antd';
 import type { ChangeEventHandler, FC } from 'react';
-import type { TransferDto } from '~api/transfers';
+import type { TransferDatasource } from '~api/transfers/types';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { Alert, Flex, Table } from 'antd';
 import { useEffect } from 'react';
@@ -37,7 +37,7 @@ export const TransferList: FC = () => {
         }
     }, [delayedSearchQuery, search, navigate]);
 
-    const handleTableChange: TableProps<TransferDto>['onChange'] = ({ current, pageSize }, _, sorter) => {
+    const handleTableChange: TableProps<TransferDatasource>['onChange'] = ({ current, pageSize }, _, sorter) => {
         const hasSorting = 'columnKey' in sorter && sorter.order;
         const sorting = hasSorting
             ? {

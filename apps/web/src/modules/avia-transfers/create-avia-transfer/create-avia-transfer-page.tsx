@@ -8,6 +8,7 @@ import { mapAviaTransferFormToPayload, useCreateAviaTransfer } from '~api/avia-t
 import { useReceiversList } from '~api/receivers';
 import { useTransportersList } from '~api/transporters';
 import { AviaTransferForm } from '~components/avia-transfer-form';
+import styles from './create-avia-transfer-page.module.css';
 
 export const CreateAviaTransferPage: FC = () => {
     const navigate = useNavigate();
@@ -42,7 +43,7 @@ export const CreateAviaTransferPage: FC = () => {
 
     return (
         <Flex vertical>
-            <Flex align="center">
+            <Flex align="center" className={styles.navigation_margin}>
                 <Button type="default" onClick={() => navigate({ to: '/avia-transfers' })}>
                     <LeftOutlined />
                     <Typography.Text>Назад</Typography.Text>

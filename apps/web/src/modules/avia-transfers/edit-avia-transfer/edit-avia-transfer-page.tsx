@@ -8,7 +8,7 @@ import { mapAviaTransferFormToPayload, useUpdateAviaTransfer } from '~api/avia-t
 import { useReceiversList } from '~api/receivers';
 import { useTransportersList } from '~api/transporters';
 import { AviaTransferForm } from '~components/avia-transfer-form';
-import { formatId } from '~utils/lib/formatId';
+import { formatId } from '~utils/lib/format-id';
 import styles from './edit-avia-transfer-page.module.css';
 import { useAviaTransfer } from './hooks/use-avia-transfer';
 
@@ -60,7 +60,7 @@ export const EditAviaTransferPage: FC = () => {
 
     return (
         <Flex vertical>
-            <Flex align="center">
+            <Flex align="center" className={styles.navigation_margin}>
                 <Button type="default" onClick={() => navigate({ to: '/avia-transfers' })}>
                     <LeftOutlined />
                     <Typography.Text>Назад</Typography.Text>
@@ -70,14 +70,12 @@ export const EditAviaTransferPage: FC = () => {
                 <Skeleton
                     active
                     paragraph={{ rows: 6 }}
-                    style={{ marginTop: 16 }}
                 />
             )}
             {!isLoading && (isError || !transfer) && (
                 <Card className={styles.card_not_found}>
                     <Empty
                         description="Не найдено"
-                        style={{ marginTop: 16 }}
                     />
                 </Card>
             )}

@@ -42,6 +42,17 @@ export interface TransferDto {
     files: TransferFileDto[];
 }
 
+interface DatasourceFlags {
+    shouldShowShippedAlert: boolean;
+    exceptionFlags: {
+        [key: string]: boolean;
+    };
+}
+
+export interface TransferDatasource extends TransferDto, DatasourceFlags {
+    key: number;
+}
+
 export interface TransfersPagination {
     page: number;
     limit: number;

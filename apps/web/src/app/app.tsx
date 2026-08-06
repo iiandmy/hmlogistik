@@ -18,12 +18,6 @@ const App: FC = () => (
         locale={locale}
         theme={{
             components: {
-                Form: {
-                    labelFontSize: 14,
-                    labelHeight: 12,
-                    verticalLabelPadding: 0,
-                    itemMarginBottom: 20,
-                },
                 Divider: {
                     margin: 12,
                     marginLG: 12,

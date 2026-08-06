@@ -2,12 +2,12 @@
     width: 100%;
 }
 
-.full_width {
-    width: 100%;
-}
-
 .full_height {
     min-height: 100%;
+}
+
+.full_width {
+    width: 100%;
 }
 
 .divider {

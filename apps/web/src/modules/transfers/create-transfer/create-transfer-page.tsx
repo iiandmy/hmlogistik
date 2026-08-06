@@ -9,6 +9,7 @@ import { useReceiversList } from '~api/receivers';
 import { useCreateTransfer } from '~api/transfers';
 import { useTransportersList } from '~api/transporters';
 import { TransferForm } from '~components/transfer-form';
+import styles from './create-transfer-page.module.css';
 
 export const CreateTransferPage: FC = () => {
     const navigate = useNavigate();
@@ -56,7 +57,7 @@ export const CreateTransferPage: FC = () => {
 
     return (
         <Flex vertical>
-            <Flex align="center">
+            <Flex align="center" className={styles.navigation_margin}>
                 <Button type="default" onClick={() => navigate({ to: '/transfers' })}>
                     <LeftOutlined />
                     <Typography.Text>Назад</Typography.Text>
