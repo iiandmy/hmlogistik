@@ -6,6 +6,7 @@ import { Link } from '@tanstack/react-router';
 import { Tooltip, Typography } from 'antd';
 import { formatId } from '~utils/lib/format-id';
 import { getPaymentDelayExceptionContent } from '~utils/lib/get-payment-delay-exception-content';
+import styles from './id-column.module.css';
 
 interface Props {
     record: TransferDatasource;
@@ -18,7 +19,7 @@ export const IdColumn: FC<Props> = ({ record }) => {
     });
 
     return (
-        <Link to="/transfers/$id" params={{ id: String(record.id) }}>
+        <Link to="/transfers/$id" params={{ id: String(record.id) }} className={styles.container}>
             {record.shouldShowShippedAlert && !shouldShowPaymentDelayException && (
                 <Tooltip title="Отправка доставлена">
                     <CheckCircleTwoTone twoToneColor={green[5]} />

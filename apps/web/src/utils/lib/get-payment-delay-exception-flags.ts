@@ -15,6 +15,6 @@ export const getPaymentDelayExceptionFlags = (transporter: Transporter, receiver
     }
     return {
         ...acc,
-        [receiver.id]: delay > dayjs().diff(shippedAt, 'day'),
+        [receiver.id]: delay < dayjs().diff(shippedAt, 'day'),
     };
 }, {});
