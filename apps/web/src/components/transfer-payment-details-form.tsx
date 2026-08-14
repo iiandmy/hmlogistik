@@ -3,9 +3,9 @@ import type { ColumnsType } from 'antd/es/table';
 import type { FC } from 'react';
 import type { TransferPaymentDetailsDto } from '~api/transfer-payment-details';
 import type { TransferPaymentFormValues } from '~utils/types/types';
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, DatePicker, Flex, Form, Input, InputNumber, Select, Table, Typography } from 'antd';
-import { useState } from 'react';
+import { DeleteOutlined, DollarOutlined, PlusOutlined, TruckFilled } from '@ant-design/icons';
+import { Alert, Button, Col, DatePicker, Descriptions, Flex, Form, Input, InputNumber, Row, Select, Statistic, Table, Typography } from 'antd';
+import React, { useState } from 'react';
 import styles from './form-shared.module.css';
 
 interface Props {
@@ -13,8 +13,6 @@ interface Props {
     paymentDetails: TransferPaymentDetailsDto;
     error: string | null;
     canAddPayments: boolean;
-    canClearShares: boolean;
-    onClearShares: () => void;
     draftRowsVersion: number;
 }
 
@@ -40,8 +38,6 @@ export const TransferPaymentDetailsForm: FC<Props> = ({
     paymentDetails,
     error,
     canAddPayments,
-    canClearShares,
-    onClearShares,
     draftRowsVersion,
 }) => {
     const [draftRowsState, setDraftRowsState] = useState<{
@@ -66,7 +62,7 @@ export const TransferPaymentDetailsForm: FC<Props> = ({
         });
     };
     const isSingleReceiver = paymentDetails.shares.length === 1;
-    const receiverOptions = paymentDetails.shares.map(share => ({
+    const receiverOptions = paymentDetails.shares.filter(share => !share.isFullyPaid).map(share => ({
         value: share.receiverId,
         label: share.receiverName,
     }));
@@ -164,65 +160,130 @@ export const TransferPaymentDetailsForm: FC<Props> = ({
             name="transfer-payment-details-form"
         >
             {error && <Alert title={error} type="error" showIcon style={{ marginBottom: 16 }} />}
-            {paymentDetails.sharesLocked && (
-                <Alert
-                    showIcon
-                    type="info"
-                    message="Доли зафиксированы, потому что по отправке уже есть сохранённые выплаты"
-                    style={{ marginBottom: 16 }}
-                />
-            )}
-            {!paymentDetails.sharesLocked && !isSingleReceiver && (
-                <Alert
-                    showIcon
-                    type="info"
-                    message="Если заполняете доли, нужно заполнить все строки. Сумма долей должна быть равна общей сумме долга."
-                    style={{ marginBottom: 16 }}
-                />
-            )}
-            <Flex gap={12} style={{ maxWidth: '75%' }}>
-                <Form.Item label="Перевозчик" className={styles.full_width}>
-                    <Input value={paymentDetails.transporter.name} readOnly />
-                </Form.Item>
-                <Form.Item label="Общая сумма долга" className={styles.full_width}>
-                    <Input value={String(paymentDetails.totalDebt)} readOnly />
-                </Form.Item>
-            </Flex>
-            <Flex justify="space-between" align="center" style={{ marginBottom: 12, maxWidth: '75%' }}>
-                <Typography.Title level={5} style={{ margin: 0 }}>Доли получателей</Typography.Title>
-                {!paymentDetails.sharesLocked && !isSingleReceiver && (
-                    <Button disabled={!canClearShares} onClick={onClearShares}>
-                        Очистить доли
-                    </Button>
+            <Flex style={{ width: '50%' }}>
+                {paymentDetails.sharesLocked && (
+                    <Alert
+                        showIcon
+                        type="info"
+                        title="В отправке есть выплаты. Редактирование долей заблокировано."
+                    />
+                )}
+                {!canAddPayments && !isSingleReceiver && (
+                    <Alert
+                        showIcon
+                        type="warning"
+                        title="Для отправки с несколькими получателями сначала заполните доли всех получателей"
+                        style={{ marginBottom: 16 }}
+                    />
                 )}
             </Flex>
-            <Flex vertical gap={12} style={{ marginBottom: 16, maxWidth: '75%' }}>
-                {paymentDetails.shares.map((share, index) => (
-                    <Flex key={share.receiverId} gap={12} align="end">
-                        <Form.Item label="Получатель" className={styles.full_width} extra=" ">
-                            <Input value={share.receiverName} readOnly />
-                        </Form.Item>
-                        <Form.Item
-                            name={['shares', index, 'amount']}
-                            label="Доля, $"
-                            className={styles.full_width}
-                            extra={`Выплачено: $${share.paidAmount}. Остаток: $${share.remainingAmount ?? '—'}`}
-                        >
-                            <InputNumber
-                                disabled={paymentDetails.sharesLocked || isSingleReceiver}
-                                min={0}
-                                style={{ width: '100%' }}
-                                placeholder={isSingleReceiver ? String(paymentDetails.totalDebt) : '0.00'}
-                            />
-                        </Form.Item>
-                    </Flex>
-                ))}
+            <Flex gap={12} justify="center" style={{ width: '50%', backgroundColor: 'white', borderRadius: '24px', padding: '24px', marginBlock: 16 }} vertical>
+                <Flex gap={36} justify="center">
+                    <Statistic
+                        title="Перевозчик"
+                        prefix={<TruckFilled />}
+                        value={paymentDetails.transporter.name}
+                    />
+                    <Statistic
+                        title="Общая сумма долга"
+                        prefix={<DollarOutlined />}
+                        value={paymentDetails.totalDebt}
+                    />
+                </Flex>
+                <Flex vertical gap={12} style={{ width: '100%', marginTop: 12 }}>
+                    <Form.Item
+                        noStyle
+                        shouldUpdate
+                    >
+                        {({ getFieldValue }) => {
+                            const disabled = paymentDetails.sharesLocked || isSingleReceiver;
+
+                            return (
+                                disabled
+                                    ? (
+                                            <Descriptions>
+                                                {paymentDetails.shares.map((share, index) => {
+                                                    const shareAmount = getFieldValue(['shares', index, 'amount']);
+                                                    return (
+                                                        <React.Fragment key={share.receiverId}>
+                                                            <Descriptions.Item>
+                                                                <Typography.Text strong>
+                                                                    {share.receiverName}
+                                                                </Typography.Text>
+                                                            </Descriptions.Item>
+                                                            {disabled
+                                                                ? (
+                                                                        <>
+                                                                            <Descriptions.Item label="Доля">
+                                                                                $
+                                                                                {shareAmount}
+                                                                                <Form.Item
+                                                                                    name={['shares', index, 'amount']}
+                                                                                    hidden
+                                                                                    noStyle
+                                                                                >
+                                                                                    <Input type="hidden" />
+                                                                                </Form.Item>
+                                                                            </Descriptions.Item>
+                                                                            <Descriptions.Item label="Остаток" span="filled">
+                                                                                $
+                                                                                {share.remainingAmount}
+                                                                            </Descriptions.Item>
+                                                                        </>
+                                                                    )
+                                                                : (
+                                                                        <Descriptions.Item span="filled">
+                                                                            <Form.Item
+                                                                                label="Доля"
+                                                                                name={['shares', index, 'amount']}
+                                                                            >
+                                                                                <InputNumber
+                                                                                    placeholder="0.00"
+                                                                                    style={{ width: '100%' }}
+                                                                                    min={0}
+                                                                                />
+                                                                            </Form.Item>
+                                                                        </Descriptions.Item>
+                                                                    )}
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </Descriptions>
+                                        )
+                                    : (
+                                            <>
+                                                {paymentDetails.shares.map((share, index) => (
+                                                    <Row gutter={12} key={share.receiverId}>
+                                                        <Col span={8}>
+                                                            <Flex style={{ height: '100%' }} align="center">
+                                                                <Typography.Text strong>{share.receiverName}</Typography.Text>
+                                                            </Flex>
+                                                        </Col>
+                                                        <Col span={16}>
+                                                            <Form.Item
+                                                                noStyle
+                                                                name={['shares', index, 'amount']}
+                                                            >
+                                                                <InputNumber
+                                                                    placeholder="Доля, $"
+                                                                    style={{ width: '100%' }}
+                                                                    min={0}
+                                                                />
+                                                            </Form.Item>
+                                                        </Col>
+                                                    </Row>
+                                                ))}
+                                            </>
+                                        )
+                            );
+                        }}
+                    </Form.Item>
+                </Flex>
             </Flex>
             <Flex justify="space-between" align="center" style={{ marginBottom: 12 }}>
                 <Typography.Title level={5} style={{ margin: 0 }}>Выплаты</Typography.Title>
                 <Button
-                    disabled={!canAddPayments}
-                    type="dashed"
+                    disabled={!canAddPayments || paymentDetails.totalRemaining === 0}
                     icon={<PlusOutlined />}
                     onClick={() => {
                         const currentPayments = form.getFieldValue('newPayments') ?? [];
@@ -266,14 +327,6 @@ export const TransferPaymentDetailsForm: FC<Props> = ({
                     </>
                 )}
             />
-            {!canAddPayments && !isSingleReceiver && (
-                <Alert
-                    showIcon
-                    type="warning"
-                    message="Для отправки с несколькими получателями сначала заполните доли всех получателей"
-                    style={{ marginBottom: 16 }}
-                />
-            )}
         </Form>
     );
 };

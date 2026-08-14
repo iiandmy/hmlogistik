@@ -3,6 +3,24 @@ export interface TransferPaymentAlertReceiverResponse {
     receiverName: string;
 }
 
+export interface TransferPaymentOverviewReceiverResponse {
+    receiverId: number;
+    receiverName: string;
+    remainingAmount: number | null;
+}
+
+export interface TransferPaymentOverviewItemResponse {
+    transferId: number;
+    cargo: string;
+    transporterName: string;
+    receivers: TransferPaymentOverviewReceiverResponse[];
+    isPaid: boolean;
+}
+
+export interface TransferPaymentOverviewListResponse {
+    items: TransferPaymentOverviewItemResponse[];
+}
+
 export interface TransferPaymentAlertResponse {
     shouldShow: boolean;
     overdueReceivers: TransferPaymentAlertReceiverResponse[];

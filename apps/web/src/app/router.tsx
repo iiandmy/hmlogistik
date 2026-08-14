@@ -14,6 +14,7 @@ import { CreateAviaTransferPage } from '~modules/avia-transfers/create-avia-tran
 import { EditAviaTransferPage } from '~modules/avia-transfers/edit-avia-transfer/edit-avia-transfer-page';
 import { CargoPage } from '~modules/cargo/cargo-page';
 import { ReceiversPage } from '~modules/receivers/receivers-page';
+import { TransferPaymentsPage } from '~modules/transfer-payments/transfer-payments-page';
 import { CreateTransferPage } from '~modules/transfers/create-transfer/create-transfer-page';
 import { TransferListPage } from '~modules/transfers/transfer-list/transfer-list-page';
 import { TransportersPage } from '~modules/transporters/transporters-page';
@@ -25,6 +26,10 @@ export const transfersSearchSchema = z.object({
     sortBy: z.enum(['createdAt', 'shippedAt']).optional().catch(undefined),
     order: z.enum(['asc', 'desc']).optional().catch(undefined),
     q: z.string().optional().catch(undefined),
+});
+
+export const transferPaymentsSearchSchema = z.object({
+    status: z.enum(['paid', 'unpaid']).optional().catch(undefined),
 });
 
 export const aviaTransfersSearchSchema = z.object({
@@ -77,6 +82,13 @@ const createTransferRoute = createRoute({
     getParentRoute: () => transfersRoute,
     path: 'create',
     component: CreateTransferPage,
+});
+
+const transferPaymentsRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/transfer-payments',
+    component: TransferPaymentsPage,
+    validateSearch: transferPaymentsSearchSchema,
 });
 
 // ── Avia Transfers (with nested routes) ─────────────────────────────────────
@@ -135,6 +147,7 @@ export const routeTree = rootRoute.addChildren([
         transferRoute,
         createTransferRoute,
     ]),
+    transferPaymentsRoute,
     aviaTransfersRoute.addChildren([
         aviaTransfersIndexRoute,
         createAviaTransferRoute,

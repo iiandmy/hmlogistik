@@ -10,6 +10,7 @@ const { Content, Sider } = Layout;
 
 const MENU_ROUTES = {
     transfers: '/transfers',
+    transferPayments: '/transfer-payments',
     aviaTransfers: '/avia-transfers',
     cargo: '/cargo',
     transporters: '/transporters',
@@ -30,6 +31,7 @@ const menuItems: ItemType<MenuItemType>[] = [
         icon: <PullRequestOutlined />,
         children: [
             { key: 'transfers', label: 'ЖД' },
+            { key: 'transferPayments', label: 'Оплата' },
             { key: 'aviaTransfers', label: 'Авиа' },
         ],
     },
@@ -49,6 +51,9 @@ const getActiveMenuKey = (pathname: string): MenuKey => {
     if (pathname.startsWith('/avia-transfers')) {
         return 'aviaTransfers';
     }
+    if (pathname.startsWith('/transfer-payments')) {
+        return 'transferPayments';
+    }
     if (pathname.startsWith('/cargo')) {
         return 'cargo';
     }
@@ -63,7 +68,7 @@ const getActiveMenuKey = (pathname: string): MenuKey => {
 };
 
 const getOpenGroupKey = (key: MenuKey): MenuGroupKey => {
-    if (key === 'transfers' || key === 'aviaTransfers') {
+    if (key === 'transfers' || key === 'transferPayments' || key === 'aviaTransfers') {
         return 'shipments';
     }
 
