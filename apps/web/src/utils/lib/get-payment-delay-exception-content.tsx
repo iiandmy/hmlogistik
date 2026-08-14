@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { TransferPaymentAlertDto } from '~api/transfers/types';
+import type { TransferPaymentAlertDto } from '~api/transfer-payment-details';
 import { Flex } from 'antd';
 
 interface GetPaymentDelayExceptionParams {
