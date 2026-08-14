@@ -83,10 +83,8 @@ export const ReceiversPage: FC = () => {
                                     setEditingReceiver({ id: record.id, name: record.name });
                                     editForm.setFieldsValue({ name: record.name });
                                 }}
-                                shape="square"
-                            >
-                                <EditOutlined />
-                            </Button>
+                                icon={<EditOutlined />}
+                            />
                         ),
                     },
                 ]}
