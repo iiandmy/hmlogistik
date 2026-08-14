@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import type { TransferPaymentDetailsDto } from '~api/transfer-payment-details';
 import type { TransferPaymentFormValues } from '~utils/types/types';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Button, DatePicker, Divider, Flex, Form, Input, InputNumber, Select, Space, Table, Typography } from 'antd';
+import { Alert, Button, DatePicker, Flex, Form, Input, InputNumber, Select, Table, Typography } from 'antd';
 import { useState } from 'react';
 import styles from './form-shared.module.css';
 
