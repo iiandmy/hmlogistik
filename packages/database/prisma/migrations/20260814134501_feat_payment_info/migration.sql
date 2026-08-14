@@ -1,2 +1,0 @@
--- RenameIndex
-ALTER INDEX "transfer_payment_receiver_shares_payment_details_id_receiver_id" RENAME TO "transfer_payment_receiver_shares_payment_details_id_receive_key";
