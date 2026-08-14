@@ -19,6 +19,8 @@ export const mapTransferDtoToForm = (dto: TransferDto): { transfer: TransferForm
             receiverIds: dto.receivers.map(receiver => receiver.id),
             createdAt: dto.createdAt ? dayjs(dto.createdAt) : null,
             shippedAt: dto.shippedAt ? dayjs(dto.shippedAt) : null,
+            declarationDate: dto.declarationDate ? dayjs(dto.declarationDate) : null,
+            actDate: dto.actDate ? dayjs(dto.actDate) : null,
         },
         files: transferFiles,
     };
@@ -31,7 +33,7 @@ export const mapTransferDtoToDatasource = (dto: TransferDto): TransferDatasource
     createdAt: dto.createdAt ? dayjs(dto.createdAt).format('DD/MM/YYYY') : null,
     shippedAt: dto.shippedAt ? dayjs(dto.shippedAt).format('DD/MM/YYYY') : null,
     shouldShowShippedAlert: !!dto.shippedAt,
-    exceptionFlags: dto.shippedAt
-        ? getPaymentDelayExceptionFlags(dto.transporter, dto.receivers, dayjs(dto.shippedAt))
+    exceptionFlags: dto.actDate
+        ? getPaymentDelayExceptionFlags(dto.transporter, dto.receivers, dayjs(dto.actDate))
         : {},
 });

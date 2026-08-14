@@ -22,6 +22,14 @@ export class CreateTransferDto {
     @IsDateString()
     shippedAt?: string;
 
+    @IsOptional()
+    @IsDateString()
+    declarationDate?: string;
+
+    @IsOptional()
+    @IsDateString()
+    actDate?: string;
+
     @Type(() => Number)
     @IsInt()
     @Min(1)

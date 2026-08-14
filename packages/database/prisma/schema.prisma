@@ -16,6 +16,8 @@ model Transfer {
   id                BigInt             @id @default(autoincrement())
   createdAt         DateTime?          @map("created_at") @db.Timestamptz()
   shippedAt         DateTime?          @map("shipped_at") @db.Timestamptz()
+  declarationDate   DateTime?          @map("declaration_date") @db.Timestamptz()
+  actDate           DateTime?          @map("act_date") @db.Timestamptz()
   transporter       String
   receiver          String
   transporterId     BigInt             @map("transporter_id")

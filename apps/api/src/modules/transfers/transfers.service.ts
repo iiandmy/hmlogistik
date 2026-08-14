@@ -75,6 +75,8 @@ export class TransfersService {
             id: Number(row.id),
             createdAt: row.createdAt?.toISOString() ?? null,
             shippedAt: row.shippedAt?.toISOString() ?? null,
+            declarationDate: row.declarationDate?.toISOString() ?? null,
+            actDate: row.actDate?.toISOString() ?? null,
             legacyTransporter: this.normalizeLegacyValue(row.transporter),
             legacyReceiver: this.normalizeLegacyValue(row.receiver),
             transporter: {
@@ -261,6 +263,8 @@ export class TransfersService {
             data: {
                 createdAt: dto.createdAt ? new Date(dto.createdAt) : null,
                 shippedAt: dto.shippedAt ? new Date(dto.shippedAt) : null,
+                declarationDate: dto.declarationDate ? new Date(dto.declarationDate) : null,
+                actDate: dto.actDate ? new Date(dto.actDate) : null,
                 transporter: '',
                 receiver: '',
                 transporterId: dto.transporterId,
@@ -329,6 +333,12 @@ export class TransfersService {
         }
         if (dto.shippedAt !== undefined) {
             updateData.shippedAt = dto.shippedAt ? new Date(dto.shippedAt) : null;
+        }
+        if (dto.declarationDate !== undefined) {
+            updateData.declarationDate = dto.declarationDate ? new Date(dto.declarationDate) : null;
+        }
+        if (dto.actDate !== undefined) {
+            updateData.actDate = dto.actDate ? new Date(dto.actDate) : null;
         }
         if (dto.transporterId !== undefined) {
             updateData.transporterRecord = { connect: { id: dto.transporterId } };
