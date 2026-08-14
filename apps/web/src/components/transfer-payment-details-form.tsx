@@ -302,7 +302,6 @@ export const TransferPaymentDetailsForm: FC<Props> = ({
                 pagination={false}
                 columns={columns}
                 dataSource={paymentRows}
-                locale={{ emptyText: 'Выплаты пока не добавлены' }}
                 style={{ marginBottom: 16 }}
                 rowKey={row => `${draftRowsVersion}-${row.key}`}
                 footer={() => (
