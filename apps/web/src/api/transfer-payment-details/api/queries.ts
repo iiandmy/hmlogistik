@@ -6,9 +6,9 @@ import { transferPaymentDetailsKeys } from './queryKeys';
 
 export const useTransferPaymentDetails = (
     params: { transferId: string },
-    options?: UseQueryOptions<TransferPaymentDetailsDto>,
+    options?: Partial<UseQueryOptions<TransferPaymentDetailsDto>>,
 ): UseQueryResult<TransferPaymentDetailsDto> => useQuery({
+    ...options,
     queryKey: transferPaymentDetailsKeys.detail(params.transferId),
     queryFn: () => transferPaymentDetailsApi.getByTransferId(params.transferId),
-    ...options,
 });
