@@ -40,6 +40,28 @@ export interface TransferPaymentDetailsDto {
     paymentAlert: TransferPaymentAlertDto;
 }
 
+export interface TransferPaymentOverviewReceiverDto {
+    receiverId: number;
+    receiverName: string;
+    remainingAmount: number | null;
+}
+
+export interface TransferPaymentOverviewItemDto {
+    transferId: number;
+    cargo: string;
+    transporterName: string;
+    receivers: TransferPaymentOverviewReceiverDto[];
+    isPaid: boolean;
+}
+
+export interface TransferPaymentOverviewListResponse {
+    items: TransferPaymentOverviewItemDto[];
+}
+
+export interface GetTransferPaymentOverviewParams {
+    status?: 'paid' | 'unpaid';
+}
+
 export interface UpdateTransferPaymentDetailsPayload {
     shares?: Array<{
         receiverId: number;

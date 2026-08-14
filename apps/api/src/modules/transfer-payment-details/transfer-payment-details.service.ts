@@ -1,8 +1,11 @@
 import type { Prisma } from '@hmlogistik/database';
+import type { QueryTransferPaymentDetailsDto } from './dto/query-transfer-payment-details.dto';
 import type { UpdateTransferPaymentDetailsDto } from './dto/update-transfer-payment-details.dto';
 import type {
     TransferPaymentAlertResponse,
     TransferPaymentDetailsResponse,
+    TransferPaymentOverviewItemResponse,
+    TransferPaymentOverviewListResponse,
     TransferPaymentShareResponse,
 } from './interfaces/transfer-payment-details-response.interface';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
@@ -387,6 +390,70 @@ export class TransferPaymentDetailsService {
         if (totalPaid > Number(transfer.price)) {
             throw new BadRequestException('Payments cannot exceed transfer price');
         }
+    }
+
+    private mapTransferToOverviewItem(
+        transfer: TransferWithPaymentDetails,
+    ): TransferPaymentOverviewItemResponse {
+        const details = this.mapTransferToPaymentDetailsResponse(transfer);
+
+        return {
+            transferId: Number(transfer.id),
+            cargo: transfer.cargo,
+            transporterName: transfer.transporterRecord.name,
+            receivers: details.shares.map(share => ({
+                receiverId: share.receiverId,
+                receiverName: share.receiverName,
+                remainingAmount: share.remainingAmount,
+            })),
+            isPaid: details.totalRemaining <= 0,
+        };
+    }
+
+    async findAll(query: QueryTransferPaymentDetailsDto): Promise<TransferPaymentOverviewListResponse> {
+        const rows = await this.prisma.transfer.findMany({
+            include: {
+                transporterRecord: {
+                    include: {
+                        delayRules: {
+                            include: { receiver: true },
+                            orderBy: { receiver: { name: 'asc' } },
+                        },
+                    },
+                },
+                receiverLinks: {
+                    include: { receiver: true },
+                    orderBy: { receiver: { name: 'asc' } },
+                },
+                paymentDetails: {
+                    include: {
+                        shares: {
+                            include: { receiver: true },
+                            orderBy: { receiver: { name: 'asc' } },
+                        },
+                        payments: {
+                            include: { receiver: true },
+                            orderBy: [{ paidAt: 'desc' }, { id: 'desc' }],
+                        },
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        const items = rows
+            .map(transfer => this.mapTransferToOverviewItem(transfer))
+            .filter((item) => {
+                if (!query.status) {
+                    return true;
+                }
+
+                return query.status === 'paid'
+                    ? item.isPaid
+                    : !item.isPaid;
+            });
+
+        return { items };
     }
 
     async ensurePaymentDetailsExists(
