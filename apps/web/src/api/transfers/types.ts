@@ -1,4 +1,5 @@
 import type { TransferFile } from '@hmlogistik/database';
+import type { TransferPaymentAlertDto } from '~api/transfer-payment-details';
 
 export type TransferFileDto = Omit<TransferFile, 'id' | 'transferId' | 'sizeBytes' | 'createdAt' | 'transfer'> & {
     id: number;
@@ -34,6 +35,9 @@ export interface TransferDto {
     shippedAt: string | null;
     declarationDate: string | null;
     actDate: string | null;
+    isReceiversEditable: boolean;
+    isPriceEditable: boolean;
+    paymentAlert: TransferPaymentAlertDto;
     legacyTransporter: string | null;
     legacyReceiver: string | null;
     transporter: TransferTransporterDto;
@@ -46,9 +50,6 @@ export interface TransferDto {
 
 interface DatasourceFlags {
     shouldShowShippedAlert: boolean;
-    exceptionFlags: {
-        [key: string]: boolean;
-    };
 }
 
 export interface TransferDatasource extends TransferDto, DatasourceFlags {

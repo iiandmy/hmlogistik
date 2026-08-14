@@ -14,8 +14,7 @@ interface Props {
 
 export const IdColumn: FC<Props> = ({ record }) => {
     const { shouldShowPaymentDelayException, tooltipContent } = getPaymentDelayExceptionContent({
-        paymentExceptionFlags: record.exceptionFlags,
-        receivers: record.receivers,
+        paymentAlert: record.paymentAlert,
     });
 
     return (

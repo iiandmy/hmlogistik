@@ -22,6 +22,8 @@ interface Props {
     initialValues?: TransferFormValues;
     legacyTransporterName?: string | null;
     legacyReceiverName?: string | null;
+    isReceiversEditable?: boolean;
+    isPriceEditable?: boolean;
     onFinish: (values: TransferFormValues) => void;
     onValuesChange?: (changedValues: Partial<TransferFormValues>, allValues: TransferFormValues) => void;
     fileList: UploadFile[];
@@ -50,6 +52,8 @@ export const TransferForm: FC<Props> = ({
     error,
     legacyTransporterName,
     legacyReceiverName,
+    isReceiversEditable = true,
+    isPriceEditable = true,
     onValuesChange,
     fileList,
     onFileListChange,
@@ -132,7 +136,7 @@ export const TransferForm: FC<Props> = ({
                             label="Получатель"
                             className={styles.full_width}
                         >
-                            <Select allowClear mode="multiple" options={receiverOptions} />
+                            <Select allowClear mode="multiple" options={receiverOptions} disabled={!isReceiversEditable} />
                         </Form.Item>
                     </Flex>
                     <Form.Item
@@ -176,6 +180,7 @@ export const TransferForm: FC<Props> = ({
                                     noStyle
                                 >
                                     <InputNumber
+                                        disabled={!isPriceEditable}
                                         min={0}
                                         placeholder="0.00"
                                         className={styles.full_width}

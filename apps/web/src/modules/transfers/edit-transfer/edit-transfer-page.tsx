@@ -1,20 +1,22 @@
 import type { UploadFile } from 'antd';
 import type { FC } from 'react';
+import type { UpdateTransferPaymentDetailsPayload } from '~api/transfer-payment-details';
 import type { UpdateTransferPayload } from '~api/transfers';
-import type { TransferFormValues } from '~utils/types/types';
+import type { TransferFormValues, TransferPaymentFormValues } from '~utils/types/types';
 import { green, yellow } from '@ant-design/colors';
 import { CheckCircleTwoTone, LeftOutlined, WarningTwoTone } from '@ant-design/icons';
 import { useNavigate, useParams } from '@tanstack/react-router';
-import { App, Button, Card, Empty, Flex, Form, Skeleton, Tooltip, Typography } from 'antd';
-import { useMemo, useState } from 'react';
+import { Alert, App, Button, Card, Empty, Flex, Form, Skeleton, Tabs, Tooltip, Typography } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
 import { useReceiversList } from '~api/receivers';
+import { useTransferPaymentDetails, useUpdateTransferPaymentDetails } from '~api/transfer-payment-details';
 import { useUpdateTransfer } from '~api/transfers';
 import { useTransportersList } from '~api/transporters';
 import { TransferForm } from '~components/transfer-form';
+import { TransferPaymentDetailsForm } from '~components/transfer-payment-details-form';
 import { useTransfer } from '~modules/transfers/edit-transfer/hooks/use-transfer';
 import { formatId } from '~utils/lib/format-id';
 import { getPaymentDelayExceptionContent } from '~utils/lib/get-payment-delay-exception-content';
-import { getPaymentDelayExceptionFlags } from '~utils/lib/get-payment-delay-exception-flags';
 import styles from './edit-transfer-page.module.css';
 
 export const EditTransferPage: FC = () => {
@@ -24,58 +26,74 @@ export const EditTransferPage: FC = () => {
 
     const {
         transfer,
+        transferMeta,
         legacyTransporterName,
         legacyReceiverName,
         files: transferFiles,
         isLoading,
         isError,
     } = useTransfer(id);
-    const [diff, setDiff] = useState<Partial<TransferFormValues>>({});
-    const [error, setError] = useState<string | null>(null);
+    const {
+        data: paymentDetails,
+        isLoading: isPaymentDetailsLoading,
+        isError: isPaymentDetailsError,
+    } = useTransferPaymentDetails({ transferId: id }, { enabled: !!transferMeta });
+    const [detailsDiff, setDetailsDiff] = useState<Partial<TransferFormValues>>({});
+    const [detailsError, setDetailsError] = useState<string | null>(null);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
+    const [paymentDraftRowsVersion, setPaymentDraftRowsVersion] = useState(0);
     const [newFiles, setNewFiles] = useState<UploadFile[]>([]);
     const [removedFileIds, setRemovedFileIds] = useState<number[]>([]);
     const { data: transportersData } = useTransportersList({ type: 'Rail' });
     const { data: receiversData } = useReceiversList();
 
     const [transferForm] = Form.useForm<TransferFormValues>();
+    const [paymentForm] = Form.useForm<TransferPaymentFormValues>();
 
     const shippedAt = Form.useWatch('shippedAt', transferForm);
-    const actDate = Form.useWatch('actDate', transferForm);
-    const transporterId = Form.useWatch('transporterId', transferForm);
-    const receiverIds = Form.useWatch('receiverIds', transferForm) as number[] | undefined;
+    const paymentShares = Form.useWatch('shares', paymentForm) ?? [];
+    const draftPayments = Form.useWatch('newPayments', paymentForm) ?? [];
 
-    const transporter = transportersData?.items.find(transporter => transporter.id === transporterId);
-    const receivers = receiversData?.items.filter(receiver => receiverIds?.includes(receiver.id));
-    const exceptionFlags = actDate && transporter
-        ? getPaymentDelayExceptionFlags({
-                paymentDelayDays: transporter.paymentDelayDays,
-                paymentDelayExceptions: transporter.paymentDelayExceptions.map(exception => ({
-                    receiverId: exception.receiver.id,
-                    receiverName: exception.receiver.name,
-                    paymentDelayDays: exception.paymentDelayDays,
-                })),
-            }, receivers ?? [], actDate)
-        : {};
     const { shouldShowPaymentDelayException, tooltipContent } = getPaymentDelayExceptionContent({
-        paymentExceptionFlags: exceptionFlags,
-        receivers: receivers ?? [],
+        paymentAlert: transferMeta?.paymentAlert ?? { shouldShow: false, overdueReceivers: [] },
     });
 
     const handleEditTransferError = (): void => {
-        setError('Ошибка при редактировании отправки');
+        setDetailsError(null);
     };
 
     const handleEditTransferSuccess = (): void => {
-        setError(null);
-        message.success('Отправка успешно отредактирована');
-        navigate({ to: '/transfers' });
+        setDetailsError(null);
+        message.success('Данные об отправке успешно обновлены');
+        setDetailsDiff({});
+        setNewFiles([]);
+        setRemovedFileIds([]);
     };
 
-    const { mutate, isPending } = useUpdateTransfer(
+    const handlePaymentUpdateError = (): void => {
+        setPaymentError(null);
+    };
+
+    const handlePaymentUpdateSuccess = (): void => {
+        setPaymentError(null);
+        message.success('Данные об оплате успешно обновлены');
+        paymentForm.setFieldValue('newPayments', []);
+        setPaymentDraftRowsVersion(prev => prev + 1);
+    };
+
+    const { mutate: updateTransfer, isPending: isTransferPending } = useUpdateTransfer(
         { id },
         {
             onError: handleEditTransferError,
             onSuccess: handleEditTransferSuccess,
+        },
+    );
+
+    const { mutate: updatePaymentDetails, isPending: isPaymentPending } = useUpdateTransferPaymentDetails(
+        { transferId: id },
+        {
+            onError: handlePaymentUpdateError,
+            onSuccess: handlePaymentUpdateSuccess,
         },
     );
 
@@ -92,34 +110,107 @@ export const EditTransferPage: FC = () => {
 
     const fileList = useMemo(() => [...existingFileList, ...newFiles], [existingFileList, newFiles]);
 
+    useEffect(() => {
+        if (!paymentDetails) {
+            return;
+        }
+
+        paymentForm.setFieldsValue({
+            shares: paymentDetails.shares.map(share => ({
+                receiverId: share.receiverId,
+                amount: share.amount,
+            })),
+            newPayments: [],
+        });
+    }, [paymentDetails, paymentForm]);
+
     const onEditTransfer = (): void => {
-        setError(null);
+        setDetailsError(null);
 
-        const files = newFiles
-            .flatMap(file => (file.originFileObj ? [file.originFileObj as File] : []));
+        const files = newFiles.flatMap(file => (file.originFileObj ? [file.originFileObj as File] : []));
 
-        const createdAt = diff.createdAt ? diff.createdAt.toISOString() : diff.createdAt;
-        const shippedAt = diff.shippedAt ? diff.shippedAt.toISOString() : diff.shippedAt;
-        const declarationDate = diff.declarationDate ? diff.declarationDate.toISOString() : diff.declarationDate;
-        const actDate = diff.actDate ? diff.actDate.toISOString() : diff.actDate;
+        const createdAt = detailsDiff.createdAt ? detailsDiff.createdAt.toISOString() : detailsDiff.createdAt;
+        const shippedAt = detailsDiff.shippedAt ? detailsDiff.shippedAt.toISOString() : detailsDiff.shippedAt;
+        const declarationDate = detailsDiff.declarationDate ? detailsDiff.declarationDate.toISOString() : detailsDiff.declarationDate;
+        const actDate = detailsDiff.actDate ? detailsDiff.actDate.toISOString() : detailsDiff.actDate;
 
         const payload: UpdateTransferPayload = {
-            container: diff.container === undefined ? undefined : (diff.container.trim() ? diff.container : null),
-            price: diff.price ? Number(diff.price) : undefined,
+            container: detailsDiff.container === undefined ? undefined : (detailsDiff.container.trim() ? detailsDiff.container : null),
+            price: detailsDiff.price ? Number(detailsDiff.price) : undefined,
             createdAt,
             shippedAt,
             declarationDate,
             actDate,
-            cargo: diff.cargo === undefined ? undefined : diff.cargo.trim(),
-            transporterId: diff.transporterId === undefined || diff.transporterId === null ? undefined : Number(diff.transporterId),
-            receiverIds: diff.receiverIds,
+            cargo: detailsDiff.cargo === undefined ? undefined : detailsDiff.cargo.trim(),
+            transporterId: detailsDiff.transporterId === undefined || detailsDiff.transporterId === null ? undefined : Number(detailsDiff.transporterId),
+            receiverIds: detailsDiff.receiverIds,
         };
 
-        mutate({
+        updateTransfer({
             payload,
             files,
             removedFileIds,
         });
+    };
+
+    const onUpdatePaymentDetails = (): void => {
+        setPaymentError(null);
+
+        if (!paymentDetails) {
+            return;
+        }
+
+        const values = paymentForm.getFieldsValue();
+        const normalizedShares = paymentDetails.shares.map((share, index) => ({
+            receiverId: share.receiverId,
+            amount: values.shares?.[index]?.amount ?? null,
+        }));
+        const normalizedPayments = values.newPayments
+            ?.filter(payment => payment.receiverId || payment.amount || payment.paidAt)
+            .map(payment => ({
+                receiverId: payment.receiverId,
+                amount: payment.amount,
+                paidAt: payment.paidAt,
+            })) ?? [];
+        const initialShareAmounts = paymentDetails.shares.map(share => share.amount ?? null);
+        const nextShareAmounts = normalizedShares.map(share => share.amount ?? null);
+        const hasShareChangesInPayload = initialShareAmounts.some(
+            (amount, index) => amount !== (nextShareAmounts[index] ?? null),
+        );
+
+        if (paymentDetails.shares.length > 1) {
+            const hasShareAmount = normalizedShares.some(share => share.amount !== null && share.amount !== undefined);
+            const hasEmptyShare = normalizedShares.some(share => share.amount === null || share.amount === undefined);
+
+            if (hasShareAmount && hasEmptyShare) {
+                setPaymentError('Заполните доли для всех получателей или очистите их полностью');
+                return;
+            }
+
+            if (hasShareAmount) {
+                const sharesTotal = Number(normalizedShares.reduce((sum, share) => sum + Number(share.amount ?? 0), 0).toFixed(2));
+                if (sharesTotal !== paymentDetails.totalDebt) {
+                    setPaymentError('Сумма долей должна быть равна общей сумме долга');
+                    return;
+                }
+            }
+        }
+
+        if (normalizedPayments.some(payment => !payment.receiverId || !payment.amount || !payment.paidAt)) {
+            setPaymentError('Заполните все поля в новых выплатах или удалите незаполненные строки');
+            return;
+        }
+
+        const payload: UpdateTransferPaymentDetailsPayload = {
+            shares: hasShareChangesInPayload ? normalizedShares : undefined,
+            newPayments: normalizedPayments.map(payment => ({
+                receiverId: Number(payment.receiverId),
+                amount: Number(payment.amount),
+                paidAt: payment.paidAt!.toISOString(),
+            })),
+        };
+
+        updatePaymentDetails(payload);
     };
 
     const onFileRemove = (file: UploadFile): void => {
@@ -136,11 +227,20 @@ export const EditTransferPage: FC = () => {
     };
 
     const onValuesChange = (changedValues: Partial<TransferFormValues>): void => {
-        setDiff(prevDiff => ({ ...prevDiff, ...changedValues }));
+        setDetailsDiff(prevDiff => ({ ...prevDiff, ...changedValues }));
     };
 
-    const hasDiff = Object.keys(diff).length !== 0 || newFiles.length > 0 || removedFileIds.length > 0;
-    const hasErrors = Object.values(transferForm.getFieldsError()).some(field => field.errors.length > 0);
+    const hasTransferDiff = Object.keys(detailsDiff).length !== 0 || newFiles.length > 0 || removedFileIds.length > 0;
+    const hasTransferErrors = Object.values(transferForm.getFieldsError()).some(field => field.errors.length > 0);
+    const hasDraftPayments = draftPayments.length > 0;
+    const initialShareAmounts = paymentDetails?.shares.map(share => share.amount ?? null) ?? [];
+    const currentShareAmounts = paymentShares.map(share => share.amount ?? null);
+    const hasShareChanges = initialShareAmounts.length > 0
+        && initialShareAmounts.some((amount, index) => amount !== (currentShareAmounts[index] ?? null));
+    const canAddPayments = !!paymentDetails
+        && (paymentDetails.shares.length === 1 || currentShareAmounts.every(amount => amount !== null && amount !== undefined));
+    const canClearShares = currentShareAmounts.some(amount => amount !== null && amount !== undefined);
+    const hasPaymentChanges = hasShareChanges || hasDraftPayments;
 
     return (
         <Flex vertical>
@@ -151,19 +251,14 @@ export const EditTransferPage: FC = () => {
                 </Button>
             </Flex>
             {isLoading && (
-                <Skeleton
-                    active
-                    paragraph={{ rows: 8 }}
-                />
+                <Skeleton active paragraph={{ rows: 8 }} />
             )}
-            {!isLoading && (isError || !transfer) && (
+            {!isLoading && (isError || !transfer || !transferMeta) && (
                 <Card className={styles.card_not_found}>
-                    <Empty
-                        description="Не найдено"
-                    />
+                    <Empty description="Не найдено" />
                 </Card>
             )}
-            {!isLoading && transfer && (
+            {!isLoading && transfer && transferMeta && (
                 <>
                     <Flex align="center" gap={4}>
                         {shippedAt && !shouldShowPaymentDelayException && (
@@ -180,39 +275,130 @@ export const EditTransferPage: FC = () => {
                         <Typography.Title>
                             Отправка
                             {' '}
-                            {formatId(transfer.id)}
+                            {formatId(transferMeta.id)}
                         </Typography.Title>
                     </Flex>
-                    <TransferForm
-                        form={transferForm}
-                        initialValues={transfer}
-                        onFinish={onEditTransfer}
-                        error={error}
-                        legacyTransporterName={legacyTransporterName}
-                        legacyReceiverName={legacyReceiverName}
-                        onValuesChange={onValuesChange}
-                        fileList={fileList}
-                        onFileListChange={onFileListChange}
-                        onFileRemove={onFileRemove}
-                        transporters={transportersData?.items ?? []}
-                        receivers={receiversData?.items ?? []}
+
+                    <Tabs
+                        items={[
+                            {
+                                key: 'details',
+                                label: 'Данные об отправке',
+                                children: (
+                                    <>
+                                        {(!transferMeta.isReceiversEditable || !transferMeta.isPriceEditable) && (
+                                            <Alert
+                                                showIcon
+                                                type="info"
+                                                message="По отправке есть выплаты. Изменение получателей или цены заблокировано."
+                                                style={{ marginBottom: 16 }}
+                                            />
+                                        )}
+                                        <TransferForm
+                                            form={transferForm}
+                                            initialValues={transfer}
+                                            onFinish={onEditTransfer}
+                                            error={detailsError}
+                                            legacyTransporterName={legacyTransporterName}
+                                            legacyReceiverName={legacyReceiverName}
+                                            isReceiversEditable={transferMeta.isReceiversEditable}
+                                            isPriceEditable={transferMeta.isPriceEditable}
+                                            onValuesChange={onValuesChange}
+                                            fileList={fileList}
+                                            onFileListChange={onFileListChange}
+                                            onFileRemove={onFileRemove}
+                                            transporters={transportersData?.items ?? []}
+                                            receivers={receiversData?.items ?? []}
+                                        />
+                                        <Flex gap={8} className={styles.tab_actions}>
+                                            <Tooltip
+                                                title={hasTransferErrors ? 'Исправьте ошибки в форме' : 'Внесите изменение, чтобы сохранить'}
+                                                trigger={hasTransferDiff && !hasTransferErrors ? [] : ['hover']}
+                                            >
+                                                <Button
+                                                    disabled={!hasTransferDiff || hasTransferErrors}
+                                                    loading={isTransferPending}
+                                                    type="primary"
+                                                    onClick={() => transferForm.submit()}
+                                                >
+                                                    Сохранить
+                                                </Button>
+                                            </Tooltip>
+                                            <Button type="default" onClick={() => navigate({ to: '/transfers' })}>Отменить</Button>
+                                        </Flex>
+                                    </>
+                                ),
+                            },
+                            {
+                                key: 'payment',
+                                label: 'Данные об оплате',
+                                children: isPaymentDetailsLoading || !paymentDetails
+                                    ? <Skeleton active paragraph={{ rows: 6 }} />
+                                    : isPaymentDetailsError
+                                        ? <Card><Empty description="Не удалось загрузить данные об оплате" /></Card>
+                                        : (
+                                                <>
+                                                    <TransferPaymentDetailsForm
+                                                        form={paymentForm}
+                                                        paymentDetails={paymentDetails}
+                                                        error={paymentError}
+                                                        canAddPayments={canAddPayments}
+                                                        canClearShares={canClearShares}
+                                                        draftRowsVersion={paymentDraftRowsVersion}
+                                                        onClearShares={() => {
+                                                            paymentForm.setFieldValue(
+                                                                'shares',
+                                                                paymentDetails.shares.map(share => ({
+                                                                    receiverId: share.receiverId,
+                                                                    amount: null,
+                                                                })),
+                                                            );
+                                                            paymentForm.setFieldValue('newPayments', []);
+                                                            setPaymentDraftRowsVersion(prev => prev + 1);
+                                                            setPaymentError(null);
+                                                        }}
+                                                    />
+                                                    <Flex gap={8} className={styles.tab_actions}>
+                                                        <Tooltip
+                                                            title={hasPaymentChanges ? undefined : 'Измените доли или добавьте новые выплаты'}
+                                                            trigger={hasPaymentChanges ? [] : ['hover']}
+                                                        >
+                                                            <Button
+                                                                loading={isPaymentPending}
+                                                                disabled={!hasPaymentChanges}
+                                                                type="primary"
+                                                                onClick={onUpdatePaymentDetails}
+                                                            >
+                                                                Сохранить
+                                                            </Button>
+                                                        </Tooltip>
+                                                        <Button
+                                                            type="default"
+                                                            disabled={!hasPaymentChanges}
+                                                            onClick={() => {
+                                                                if (!paymentDetails) {
+                                                                    return;
+                                                                }
+
+                                                                paymentForm.setFieldsValue({
+                                                                    shares: paymentDetails.shares.map(share => ({
+                                                                        receiverId: share.receiverId,
+                                                                        amount: share.amount,
+                                                                    })),
+                                                                    newPayments: [],
+                                                                });
+                                                                setPaymentDraftRowsVersion(prev => prev + 1);
+                                                                setPaymentError(null);
+                                                            }}
+                                                        >
+                                                            Сбросить
+                                                        </Button>
+                                                    </Flex>
+                                                </>
+                                            ),
+                            },
+                        ]}
                     />
-                    <Flex gap={8}>
-                        <Tooltip
-                            title={hasErrors ? 'Исправьте ошибки в форме' : 'Внесите изменение, чтобы сохранить'}
-                            trigger={hasDiff && !hasErrors ? [] : ['hover']}
-                        >
-                            <Button
-                                disabled={!hasDiff || hasErrors}
-                                loading={isPending}
-                                type="primary"
-                                onClick={() => transferForm.submit()}
-                            >
-                                Сохранить
-                            </Button>
-                        </Tooltip>
-                        <Button type="default" onClick={() => navigate({ to: '/transfers' })}>Отменить</Button>
-                    </Flex>
                 </>
             )}
         </Flex>

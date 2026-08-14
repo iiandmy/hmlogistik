@@ -1,5 +1,6 @@
 import type { Prisma, TransporterType } from '@hmlogistik/database';
 import type { UploadedFile } from '../files/interfaces/transfer-file-response.interface';
+import type { TransferWithPaymentDetails } from '../transfer-payment-details/transfer-payment-details.service';
 import type { CreateTransferDto } from './dto/create-transfer.dto';
 import type { QueryTransfersDto } from './dto/query-transfers.dto';
 import type { UpdateTransferDto } from './dto/update-transfer.dto';
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../providers/prisma/prisma.service';
 import { FilesService } from '../files/files.service';
+import { TransferPaymentDetailsService } from '../transfer-payment-details/transfer-payment-details.service';
 
 const SORTABLE_COLUMNS: Record<string, string> = {
     createdAt: 'createdAt',
@@ -25,40 +27,14 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 100;
 
-type TransferRow = Prisma.TransferGetPayload<{
-    include: {
-        transporterRecord: {
-            include: {
-                delayRules: {
-                    include: {
-                        receiver: true;
-                    };
-                    orderBy: {
-                        receiver: {
-                            name: 'asc';
-                        };
-                    };
-                };
-            };
-        };
-        receiverLinks: {
-            include: {
-                receiver: true;
-            };
-            orderBy: {
-                receiver: {
-                    name: 'asc';
-                };
-            };
-        };
-    };
-}>;
+type TransferRow = TransferWithPaymentDetails;
 
 @Injectable()
 export class TransfersService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly filesService: FilesService,
+        private readonly transferPaymentDetailsService: TransferPaymentDetailsService,
     ) {}
 
     private normalizeLegacyValue(value: string | null): string | null {
@@ -77,6 +53,8 @@ export class TransfersService {
             shippedAt: row.shippedAt?.toISOString() ?? null,
             declarationDate: row.declarationDate?.toISOString() ?? null,
             actDate: row.actDate?.toISOString() ?? null,
+            ...this.transferPaymentDetailsService.getEditability(row),
+            paymentAlert: this.transferPaymentDetailsService.mapTransferToPaymentDetailsResponse(row).paymentAlert,
             legacyTransporter: this.normalizeLegacyValue(row.transporter),
             legacyReceiver: this.normalizeLegacyValue(row.receiver),
             transporter: {
@@ -194,6 +172,20 @@ export class TransfersService {
                 include: { receiver: true },
                 orderBy: { receiver: { name: 'asc' as const } },
             },
+            paymentDetails: {
+                include: {
+                    shares: {
+                        include: {
+                            receiver: true,
+                        },
+                    },
+                    payments: {
+                        include: {
+                            receiver: true,
+                        },
+                    },
+                },
+            },
         } satisfies Prisma.TransferInclude;
 
         const [rows, total] = await Promise.all([
@@ -237,6 +229,20 @@ export class TransfersService {
                     include: { receiver: true },
                     orderBy: { receiver: { name: 'asc' } },
                 },
+                paymentDetails: {
+                    include: {
+                        shares: {
+                            include: {
+                                receiver: true,
+                            },
+                        },
+                        payments: {
+                            include: {
+                                receiver: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -259,25 +265,30 @@ export class TransfersService {
         await this.ensureTransporter(dto.transporterId, TransporterTypeEnum.Rail);
         await this.ensureReceivers(dto.receiverIds);
 
-        const created = await this.prisma.transfer.create({
-            data: {
-                createdAt: dto.createdAt ? new Date(dto.createdAt) : null,
-                shippedAt: dto.shippedAt ? new Date(dto.shippedAt) : null,
-                declarationDate: dto.declarationDate ? new Date(dto.declarationDate) : null,
-                actDate: dto.actDate ? new Date(dto.actDate) : null,
-                transporter: '',
-                receiver: '',
-                transporterId: dto.transporterId,
-                receiverLinks: {
-                    createMany: {
-                        data: dto.receiverIds.map(receiverId => ({ receiverId })),
+        const created = await this.prisma.$transaction(async (prisma) => {
+            const transfer = await prisma.transfer.create({
+                data: {
+                    createdAt: dto.createdAt ? new Date(dto.createdAt) : null,
+                    shippedAt: dto.shippedAt ? new Date(dto.shippedAt) : null,
+                    declarationDate: dto.declarationDate ? new Date(dto.declarationDate) : null,
+                    actDate: dto.actDate ? new Date(dto.actDate) : null,
+                    transporter: '',
+                    receiver: '',
+                    transporterId: dto.transporterId,
+                    receiverLinks: {
+                        createMany: {
+                            data: dto.receiverIds.map(receiverId => ({ receiverId })),
+                        },
                     },
+                    container: dto.container ?? null,
+                    price: dto.price,
+                    cargo: dto.cargo.trim(),
                 },
-                container: dto.container ?? null,
-                price: dto.price,
-                cargo: dto.cargo.trim(),
-            },
-            select: { id: true },
+                select: { id: true },
+            });
+
+            await this.transferPaymentDetailsService.ensurePaymentDetailsExists(Number(transfer.id), prisma);
+            return transfer;
         });
 
         const transferId = Number(created.id);
@@ -301,7 +312,22 @@ export class TransfersService {
     ): Promise<void> {
         const existing = await this.prisma.transfer.findUnique({
             where: { id },
-            select: { id: true },
+            include: {
+                paymentDetails: {
+                    include: {
+                        shares: {
+                            include: {
+                                receiver: true,
+                            },
+                        },
+                        payments: {
+                            include: {
+                                receiver: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
 
         if (!existing) {
@@ -325,6 +351,17 @@ export class TransfersService {
 
         if (dto.receiverIds !== undefined) {
             await this.ensureReceivers(dto.receiverIds);
+        }
+
+        const hasAssignedShares = (existing.paymentDetails?.shares ?? []).some(share => share.amount !== null);
+        const hasPayments = (existing.paymentDetails?.payments.length ?? 0) > 0;
+
+        if ((hasAssignedShares || hasPayments) && dto.receiverIds !== undefined) {
+            throw new BadRequestException('Receivers cannot be changed after payment shares or payments were added');
+        }
+
+        if ((hasAssignedShares || hasPayments) && dto.price !== undefined) {
+            throw new BadRequestException('Price cannot be changed after payment shares or payments were added');
         }
 
         const updateData: Prisma.TransferUpdateInput = {};
