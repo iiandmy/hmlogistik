@@ -12,3 +12,15 @@ export interface TransferFormValues {
     price: string;
     cargo: string;
 }
+
+export interface TransferPaymentFormValues {
+    shares: Array<{
+        receiverId: number;
+        amount: number | null;
+    }>;
+    newPayments: Array<{
+        receiverId: number | null;
+        amount: number | null;
+        paidAt: Dayjs | null;
+    }>;
+}

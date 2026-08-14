@@ -1,10 +1,9 @@
 import type { ReactNode } from 'react';
-import type { TransferReceiverDto } from '~api/transfers/types';
+import type { TransferPaymentAlertDto } from '~api/transfer-payment-details';
 import { Flex } from 'antd';
 
 interface GetPaymentDelayExceptionParams {
-    paymentExceptionFlags: { [receiverId: string]: boolean };
-    receivers: Pick<TransferReceiverDto, 'id' | 'name'>[];
+    paymentAlert: TransferPaymentAlertDto;
 }
 
 interface GetPaymentDelayExceptionReturn {
@@ -12,18 +11,17 @@ interface GetPaymentDelayExceptionReturn {
     tooltipContent: ReactNode;
 }
 
-export const getPaymentDelayExceptionContent = ({ paymentExceptionFlags, receivers }: GetPaymentDelayExceptionParams): GetPaymentDelayExceptionReturn => {
-    const shouldShowPaymentDelayException = Object.values(paymentExceptionFlags).some(Boolean);
-    const exceptionsMap = Object.entries(paymentExceptionFlags).filter(([, value]) => value);
+export const getPaymentDelayExceptionContent = ({ paymentAlert }: GetPaymentDelayExceptionParams): GetPaymentDelayExceptionReturn => {
+    const shouldShowPaymentDelayException = paymentAlert.shouldShow;
 
-    const tooltipContent: ReactNode = exceptionsMap.length > 0 && (
+    const tooltipContent: ReactNode = paymentAlert.overdueReceivers.length > 0 && (
         <Flex vertical gap={4}>
-            {exceptionsMap
-                .map(([key]) => (
-                    <span key={key}>
+            {paymentAlert.overdueReceivers
+                .map(receiver => (
+                    <span key={receiver.receiverId}>
                         Истёк срок выплаты для
                         {' '}
-                        {receivers.find(receiver => receiver.id === Number(key))?.name}
+                        {receiver.receiverName}
                     </span>
                 ))}
         </Flex>

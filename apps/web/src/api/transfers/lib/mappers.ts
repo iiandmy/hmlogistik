@@ -1,7 +1,6 @@
 import type { TransferFormValues } from '~utils/types/types';
 import type { TransferDatasource, TransferDto, TransferFileDto } from '../types';
 import dayjs from 'dayjs';
-import { getPaymentDelayExceptionFlags } from '~utils/lib/get-payment-delay-exception-flags';
 import 'dayjs/locale/ru';
 
 dayjs.locale('ru');
@@ -33,7 +32,4 @@ export const mapTransferDtoToDatasource = (dto: TransferDto): TransferDatasource
     createdAt: dto.createdAt ? dayjs(dto.createdAt).format('DD/MM/YYYY') : null,
     shippedAt: dto.shippedAt ? dayjs(dto.shippedAt).format('DD/MM/YYYY') : null,
     shouldShowShippedAlert: !!dto.shippedAt,
-    exceptionFlags: dto.actDate
-        ? getPaymentDelayExceptionFlags(dto.transporter, dto.receivers, dayjs(dto.actDate))
-        : {},
 });

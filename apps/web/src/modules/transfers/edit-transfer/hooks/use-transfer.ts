@@ -3,6 +3,13 @@ import { mapTransferDtoToForm, useTransferDetail } from '~api/transfers';
 
 interface UseTransferResult {
     transfer: TransferFormValues | null;
+    transferMeta: {
+        id: number;
+        shippedAt: string | null;
+        paymentAlert: import('~api/transfers').TransferDto['paymentAlert'];
+        isReceiversEditable: boolean;
+        isPriceEditable: boolean;
+    } | null;
     legacyTransporterName: string | null;
     legacyReceiverName: string | null;
     files: import('~api/transfers').TransferFileDto[];
@@ -16,6 +23,7 @@ export const useTransfer = (id: string): UseTransferResult => {
     if (isError || !data) {
         return {
             transfer: null,
+            transferMeta: null,
             legacyTransporterName: null,
             legacyReceiverName: null,
             files: [],
@@ -28,6 +36,13 @@ export const useTransfer = (id: string): UseTransferResult => {
 
     return {
         transfer,
+        transferMeta: {
+            id: data.id,
+            shippedAt: data.shippedAt,
+            paymentAlert: data.paymentAlert,
+            isReceiversEditable: data.isReceiversEditable,
+            isPriceEditable: data.isPriceEditable,
+        },
         legacyTransporterName: data.legacyTransporter,
         legacyReceiverName: data.legacyReceiver,
         files,

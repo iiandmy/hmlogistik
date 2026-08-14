@@ -5,6 +5,7 @@ import type {
     GetTransfersResponse,
     UpdateTransferInput,
 } from '../types';
+import { getResponseErrorMessage } from '~utils/lib/get-response-error-message';
 import { TRANSFERS_ENDPOINT } from './constants';
 import { TransferNotFoundError } from './errors';
 
@@ -30,7 +31,7 @@ export const transfersApi = {
         const response = await fetch(`${TRANSFERS_ENDPOINT}?${searchParams.toString()}`);
 
         if (!response.ok) {
-            throw new Error('Не удалось загрузить отправки');
+            throw new Error(await getResponseErrorMessage(response, 'Не удалось загрузить отправки'));
         }
 
         return response.json() as Promise<GetTransfersResponse>;
@@ -44,7 +45,7 @@ export const transfersApi = {
         }
 
         if (!response.ok) {
-            throw new Error('Не удалось загрузить отправку');
+            throw new Error(await getResponseErrorMessage(response, 'Не удалось загрузить отправку'));
         }
 
         return response.json() as Promise<GetTransferByIdResponse>;
@@ -63,7 +64,7 @@ export const transfersApi = {
         });
 
         if (!response.ok) {
-            throw new Error('Не удалось создать отправку');
+            throw new Error(await getResponseErrorMessage(response, 'Не удалось создать отправку'));
         }
     },
 
@@ -85,7 +86,7 @@ export const transfersApi = {
         }
 
         if (!response.ok) {
-            throw new Error('Не удалось обновить отправку');
+            throw new Error(await getResponseErrorMessage(response, 'Не удалось обновить отправку'));
         }
     },
 };

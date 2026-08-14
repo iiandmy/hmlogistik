@@ -1,4 +1,5 @@
 import type { TransferFileResponse } from '../../files/interfaces/transfer-file-response.interface';
+import type { TransferPaymentAlertResponse } from '../../transfer-payment-details/interfaces/transfer-payment-details-response.interface';
 
 export interface TransferReceiverResponse {
     id: number;
@@ -27,6 +28,9 @@ export interface TransferResponse {
     shippedAt: string | null;
     declarationDate: string | null;
     actDate: string | null;
+    isReceiversEditable: boolean;
+    isPriceEditable: boolean;
+    paymentAlert: TransferPaymentAlertResponse;
     legacyTransporter: string | null;
     legacyReceiver: string | null;
     transporter: TransferTransporterResponse;

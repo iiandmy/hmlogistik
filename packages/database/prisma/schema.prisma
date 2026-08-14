@@ -26,6 +26,7 @@ model Transfer {
   cargo             String
   transporterRecord Transporter        @relation(fields: [transporterId], references: [id])
   receiverLinks     TransferReceiver[]
+  paymentDetails    TransferPaymentDetails?
 
   files TransferFile[]
 
@@ -81,6 +82,8 @@ model Receiver {
   transfers     TransferReceiver[]
   aviaTransfers AviaTransferReceiver[]
   exceptions    TransporterDelayRule[]
+  paymentShares TransferPaymentReceiverShare[]
+  payments      TransferPayment[]
 
   @@unique([name])
   @@map("receivers")
@@ -124,6 +127,47 @@ model TransferReceiver {
   @@id([transferId, receiverId])
   @@index([receiverId])
   @@map("transfer_receivers")
+}
+
+model TransferPaymentDetails {
+  id        BigInt                       @id @default(autoincrement())
+  transferId BigInt                      @unique @map("transfer_id")
+  createdAt DateTime                     @default(now()) @map("created_at") @db.Timestamptz()
+  updatedAt DateTime                     @updatedAt @map("updated_at") @db.Timestamptz()
+  transfer  Transfer                     @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  shares    TransferPaymentReceiverShare[]
+  payments  TransferPayment[]
+
+  @@map("transfer_payment_details")
+}
+
+model TransferPaymentReceiverShare {
+  id               BigInt                 @id @default(autoincrement())
+  paymentDetailsId BigInt                 @map("payment_details_id")
+  receiverId       BigInt                 @map("receiver_id")
+  amount           Decimal?               @db.Decimal(12, 2)
+  paymentDetails   TransferPaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
+  receiver         Receiver               @relation(fields: [receiverId], references: [id], onDelete: Restrict)
+
+  @@unique([paymentDetailsId, receiverId])
+  @@index([receiverId])
+  @@map("transfer_payment_receiver_shares")
+}
+
+model TransferPayment {
+  id               BigInt                 @id @default(autoincrement())
+  paymentDetailsId BigInt                 @map("payment_details_id")
+  receiverId       BigInt                 @map("receiver_id")
+  amount           Decimal                @db.Decimal(12, 2)
+  paidAt           DateTime               @map("paid_at") @db.Timestamptz()
+  createdAt        DateTime               @default(now()) @map("created_at") @db.Timestamptz()
+  paymentDetails   TransferPaymentDetails @relation(fields: [paymentDetailsId], references: [id], onDelete: Cascade)
+  receiver         Receiver               @relation(fields: [receiverId], references: [id], onDelete: Restrict)
+
+  @@index([paymentDetailsId])
+  @@index([receiverId])
+  @@index([paidAt(sort: Desc)])
+  @@map("transfer_payments")
 }
 
 model AviaTransferReceiver {
