@@ -176,7 +176,7 @@ export const EditTransferPage: FC = () => {
         const nextShareAmounts = normalizedShares.map(share => share.amount ?? null);
         const hasShareChangesInPayload = initialShareAmounts.some(
             (amount, index) => amount !== (nextShareAmounts[index] ?? null),
-        );
+        ) && paymentDetails.shares.length > 1;
 
         if (paymentDetails.shares.length > 1) {
             const hasShareAmount = normalizedShares.some(share => share.amount !== null && share.amount !== undefined);
@@ -239,7 +239,6 @@ export const EditTransferPage: FC = () => {
         && initialShareAmounts.some((amount, index) => amount !== (currentShareAmounts[index] ?? null));
     const canAddPayments = !!paymentDetails
         && (paymentDetails.shares.length === 1 || currentShareAmounts.every(amount => amount !== null && amount !== undefined));
-    const canClearShares = currentShareAmounts.some(amount => amount !== null && amount !== undefined);
     const hasPaymentChanges = hasShareChanges || hasDraftPayments;
 
     return (
@@ -343,20 +342,7 @@ export const EditTransferPage: FC = () => {
                                                         paymentDetails={paymentDetails}
                                                         error={paymentError}
                                                         canAddPayments={canAddPayments}
-                                                        canClearShares={canClearShares}
                                                         draftRowsVersion={paymentDraftRowsVersion}
-                                                        onClearShares={() => {
-                                                            paymentForm.setFieldValue(
-                                                                'shares',
-                                                                paymentDetails.shares.map(share => ({
-                                                                    receiverId: share.receiverId,
-                                                                    amount: null,
-                                                                })),
-                                                            );
-                                                            paymentForm.setFieldValue('newPayments', []);
-                                                            setPaymentDraftRowsVersion(prev => prev + 1);
-                                                            setPaymentError(null);
-                                                        }}
                                                     />
                                                     <Flex gap={8} className={styles.tab_actions}>
                                                         <Tooltip

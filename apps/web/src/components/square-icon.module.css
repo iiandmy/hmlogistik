@@ -1,0 +1,20 @@
+.square_icon {
+    display: flex;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+	background-color: #eeeeee;
+	color: #797979;
+	text-align: center;
+	line-height: 48px;
+
+    span,
+    img,
+    svg {
+        width: 24px;
+        height: 24px;
+    }
+}
