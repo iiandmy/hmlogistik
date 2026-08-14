@@ -169,10 +169,8 @@ export const TransportersPage: FC = () => {
                                         })),
                                     });
                                 }}
-                                shape="square"
-                            >
-                                <EditOutlined />
-                            </Button>
+                                icon={<EditOutlined />}
+                            />
                         ),
                     },
                 ]}
@@ -232,37 +230,51 @@ export const TransportersPage: FC = () => {
                                         </Form.Item>
                                         <Form.List name="paymentDelayExceptions">
                                             {(fields, { add, remove }) => (
-                                                <Flex vertical gap={4}>
-                                                    {fields.map(field => (
-                                                        <Flex key={field.key} gap={4} justify="stretch">
-                                                            <Form.Item
-                                                                name={[field.name, 'receiverId']}
-                                                                label="Получатель"
-                                                                rules={[{ required: true, message: 'Выберите получателя' }]}
-                                                                style={{ flex: 1 }}
-                                                                required={false}
-                                                            >
-                                                                <Select options={receiverOptions} />
-                                                            </Form.Item>
-                                                            <Form.Item
-                                                                name={[field.name, 'paymentDelayDays']}
-                                                                label="Отсрочка, дней"
-                                                                rules={[{ required: true, message: 'Введите отсрочку' }]}
-                                                                style={{ width: 160 }}
-                                                                required={false}
-                                                            >
-                                                                <InputNumber style={{ width: '100%' }} min={0} />
-                                                            </Form.Item>
-                                                            <Form.Item label=" ">
-                                                                <Button danger onClick={() => remove(field.name)}>
-                                                                    <DeleteOutlined />
-                                                                </Button>
-                                                            </Form.Item>
-                                                        </Flex>
-                                                    ))}
-                                                    <Button type="link" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>
-                                                        + Добавить исключение
-                                                    </Button>
+                                                <Flex vertical align="start">
+                                                    {fields.length > 0 && (
+                                                        <Table
+                                                            style={{ width: '100%' }}
+                                                            dataSource={fields}
+                                                            columns={[
+                                                                {
+                                                                    title: 'Получатель',
+                                                                    key: 'receiver',
+                                                                    render: (_, record) => (
+                                                                        <Form.Item
+                                                                            name={[record.name, 'receiverId']}
+                                                                            noStyle
+                                                                            rules={[{ required: true }]}
+                                                                        >
+                                                                            <Select style={{ width: '100%' }} options={receiverOptions} />
+                                                                        </Form.Item>
+                                                                    ),
+                                                                },
+                                                                {
+                                                                    title: 'Отсрочка',
+                                                                    key: 'paymentDelayDays',
+                                                                    width: 70,
+                                                                    render: (_, record) => (
+                                                                        <Form.Item
+                                                                            name={[record.name, 'paymentDelayDays']}
+                                                                            noStyle
+                                                                            rules={[{ required: true }]}
+                                                                        >
+                                                                            <InputNumber style={{ width: '100%' }} min={0} />
+                                                                        </Form.Item>
+                                                                    ),
+                                                                },
+                                                                {
+                                                                    key: 'actions',
+                                                                    width: 40,
+                                                                    render: (_, record) => (
+                                                                        <Button danger onClick={() => remove(record.name)} icon={<DeleteOutlined />} />
+                                                                    ),
+                                                                },
+                                                            ]}
+                                                            pagination={{ hideOnSinglePage: true }}
+                                                        />
+                                                    )}
+                                                    <Button type="link" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>+ Добавить исключение</Button>
                                                 </Flex>
                                             )}
                                         </Form.List>
@@ -306,6 +318,8 @@ export const TransportersPage: FC = () => {
                         name="name"
                         label="Название"
                         rules={[{ required: true, message: 'Введите название' }]}
+                        style={{ flex: 1 }}
+                        required={false}
                     >
                         <Input />
                     </Form.Item>
@@ -320,34 +334,57 @@ export const TransportersPage: FC = () => {
                                 name="paymentDelayDays"
                                 label="Отсрочка, дней"
                                 rules={[{ required: true, message: 'Введите отсрочку' }]}
+                                required={false}
                             >
                                 <InputNumber min={0} style={{ width: '100%' }} />
                             </Form.Item>
                             <Form.List name="paymentDelayExceptions">
                                 {(fields, { add, remove }) => (
-                                    <Flex vertical gap={12}>
-                                        <Button type="dashed" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>
-                                            + Добавить исключение
-                                        </Button>
-                                        {fields.map(field => (
-                                            <Space key={field.key} align="start" style={{ display: 'flex' }}>
-                                                <Form.Item
-                                                    name={[field.name, 'receiverId']}
-                                                    label="Получатель"
-                                                    rules={[{ required: true, message: 'Выберите получателя' }]}
-                                                >
-                                                    <Select style={{ width: 260 }} options={receiverOptions} />
-                                                </Form.Item>
-                                                <Form.Item
-                                                    name={[field.name, 'paymentDelayDays']}
-                                                    label="Отсрочка, дней"
-                                                    rules={[{ required: true, message: 'Введите отсрочку' }]}
-                                                >
-                                                    <InputNumber min={0} style={{ width: 180 }} />
-                                                </Form.Item>
-                                                <Button onClick={() => remove(field.name)}>Удалить</Button>
-                                            </Space>
-                                        ))}
+                                    <Flex vertical align="start">
+                                        {fields.length > 0 && (
+                                            <Table
+                                                style={{ width: '100%' }}
+                                                dataSource={fields}
+                                                columns={[
+                                                    {
+                                                        title: 'Получатель',
+                                                        key: 'receiver',
+                                                        render: (_, record) => (
+                                                            <Form.Item
+                                                                name={[record.name, 'receiverId']}
+                                                                noStyle
+                                                                rules={[{ required: true }]}
+                                                            >
+                                                                <Select style={{ width: '100%' }} options={receiverOptions} />
+                                                            </Form.Item>
+                                                        ),
+                                                    },
+                                                    {
+                                                        title: 'Отсрочка',
+                                                        key: 'paymentDelayDays',
+                                                        width: 70,
+                                                        render: (_, record) => (
+                                                            <Form.Item
+                                                                name={[record.name, 'paymentDelayDays']}
+                                                                noStyle
+                                                                rules={[{ required: true }]}
+                                                            >
+                                                                <InputNumber style={{ width: '100%' }} min={0} />
+                                                            </Form.Item>
+                                                        ),
+                                                    },
+                                                    {
+                                                        key: 'actions',
+                                                        width: 40,
+                                                        render: (_, record) => (
+                                                            <Button danger onClick={() => remove(record.name)} icon={<DeleteOutlined />} />
+                                                        ),
+                                                    },
+                                                ]}
+                                                pagination={{ hideOnSinglePage: true }}
+                                            />
+                                        )}
+                                        <Button type="link" onClick={() => add({ receiverId: null, paymentDelayDays: null })}>+ Добавить исключение</Button>
                                     </Flex>
                                 )}
                             </Form.List>
