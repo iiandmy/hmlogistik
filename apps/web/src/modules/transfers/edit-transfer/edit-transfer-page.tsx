@@ -40,12 +40,13 @@ export const EditTransferPage: FC = () => {
     const [transferForm] = Form.useForm<TransferFormValues>();
 
     const shippedAt = Form.useWatch('shippedAt', transferForm);
+    const actDate = Form.useWatch('actDate', transferForm);
     const transporterId = Form.useWatch('transporterId', transferForm);
     const receiverIds = Form.useWatch('receiverIds', transferForm) as number[] | undefined;
 
     const transporter = transportersData?.items.find(transporter => transporter.id === transporterId);
     const receivers = receiversData?.items.filter(receiver => receiverIds?.includes(receiver.id));
-    const exceptionFlags = shippedAt && transporter
+    const exceptionFlags = actDate && transporter
         ? getPaymentDelayExceptionFlags({
                 paymentDelayDays: transporter.paymentDelayDays,
                 paymentDelayExceptions: transporter.paymentDelayExceptions.map(exception => ({
@@ -53,7 +54,7 @@ export const EditTransferPage: FC = () => {
                     receiverName: exception.receiver.name,
                     paymentDelayDays: exception.paymentDelayDays,
                 })),
-            }, receivers ?? [], shippedAt)
+            }, receivers ?? [], actDate)
         : {};
     const { shouldShowPaymentDelayException, tooltipContent } = getPaymentDelayExceptionContent({
         paymentExceptionFlags: exceptionFlags,
@@ -99,12 +100,16 @@ export const EditTransferPage: FC = () => {
 
         const createdAt = diff.createdAt ? diff.createdAt.toISOString() : diff.createdAt;
         const shippedAt = diff.shippedAt ? diff.shippedAt.toISOString() : diff.shippedAt;
+        const declarationDate = diff.declarationDate ? diff.declarationDate.toISOString() : diff.declarationDate;
+        const actDate = diff.actDate ? diff.actDate.toISOString() : diff.actDate;
 
         const payload: UpdateTransferPayload = {
             container: diff.container === undefined ? undefined : (diff.container.trim() ? diff.container : null),
             price: diff.price ? Number(diff.price) : undefined,
             createdAt,
             shippedAt,
+            declarationDate,
+            actDate,
             cargo: diff.cargo === undefined ? undefined : diff.cargo.trim(),
             transporterId: diff.transporterId === undefined || diff.transporterId === null ? undefined : Number(diff.transporterId),
             receiverIds: diff.receiverIds,

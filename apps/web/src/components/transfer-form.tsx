@@ -200,6 +200,22 @@ export const TransferForm: FC<Props> = ({
                             <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
                         </Form.Item>
                     </Flex>
+                    <Flex gap={12}>
+                        <Form.Item
+                            name="declarationDate"
+                            label="Дата декларации"
+                            className={styles.full_width}
+                        >
+                            <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                        </Form.Item>
+                        <Form.Item
+                            name="actDate"
+                            label="Дата акта"
+                            className={styles.full_width}
+                        >
+                            <DatePicker className={styles.full_width} format="DD.MM.YYYY" />
+                        </Form.Item>
+                    </Flex>
                 </Col>
                 <Col span={1} className={styles.full_height}>
                     <Divider vertical className={styles.full_height} />

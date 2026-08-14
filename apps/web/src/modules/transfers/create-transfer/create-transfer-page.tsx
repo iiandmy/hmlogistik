@@ -47,6 +47,8 @@ export const CreateTransferPage: FC = () => {
                 price: Number(transfer.price),
                 createdAt: transfer.createdAt?.toISOString(),
                 shippedAt: transfer.shippedAt?.toISOString(),
+                declarationDate: transfer.declarationDate?.toISOString(),
+                actDate: transfer.actDate?.toISOString(),
                 cargo: transfer.cargo.trim(),
                 transporterId: Number(transfer.transporterId),
                 receiverIds: transfer.receiverIds,

@@ -25,6 +25,8 @@ export interface TransferResponse {
     id: number;
     createdAt: string | null;
     shippedAt: string | null;
+    declarationDate: string | null;
+    actDate: string | null;
     legacyTransporter: string | null;
     legacyReceiver: string | null;
     transporter: TransferTransporterResponse;

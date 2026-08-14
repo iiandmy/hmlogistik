@@ -32,6 +32,8 @@ export interface TransferDto {
     id: number;
     createdAt: string | null;
     shippedAt: string | null;
+    declarationDate: string | null;
+    actDate: string | null;
     legacyTransporter: string | null;
     legacyReceiver: string | null;
     transporter: TransferTransporterDto;
@@ -78,6 +80,8 @@ export type GetTransferByIdResponse = TransferDto;
 export interface CreateTransferPayload {
     createdAt?: string | null;
     shippedAt?: string | null;
+    declarationDate?: string | null;
+    actDate?: string | null;
     transporterId: number;
     receiverIds: number[];
     container?: string | null;
